@@ -84,7 +84,7 @@
     </div>
 
     <div class="container">
-        <div class="valentine-card" style="display: none;">
+        <div id="create-valentine" class="valentine-card" style="display: none;">
             <h2>Create Your Valentine</h2>
             <div class="message-toggle">
                 <input type="checkbox" id="customMessage" class="custom-checkbox">
@@ -98,16 +98,7 @@
         <div class="received-valentines">
             <h2>Your Received Valentines</h2>
             <div class="valentines-grid">
-                <!-- Example received valentine card -->
-                <div class="received-valentine">
-                    <div class="valentine-thumbnail">
-                        <img src="placeholder-nft.jpg" alt="Valentine NFT" class="nft-image">
-                    </div>
-                    <div class="valentine-info">
-                        <p class="sender">From: <a href="https://polygonscan.com/address/0x68b1d87f95878fe05b998f19b66f4baba5de1aed" target="_blank" class="address-link">0x68b1...1aed</a></p>
-                        <p class="year">Valentine's Day 2024</p>
-                    </div>
-                </div>
+                <!-- Cards will be loaded here -->
             </div>
         </div>
     </div>

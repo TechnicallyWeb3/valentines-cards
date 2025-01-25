@@ -92,6 +92,9 @@ async function connectWallet() {
                 <span class="wallet-text-medium">${accounts[0].slice(0, 6)}...</span>
             `;
             button.style.backgroundColor = '#e0ffe0';
+            
+            // Load valentines after successful connection
+            loadValentines();
         } catch (error) {
             console.error('Error connecting wallet:', error);
             alert('Error connecting wallet. Please try again.');
@@ -99,6 +102,18 @@ async function connectWallet() {
     } else {
         alert('Please install MetaMask or another Web3 wallet to connect!');
     }
+}
+
+// Add disconnect handler (for testing)
+function disconnectWallet() {
+    walletConnected = false;
+    updateSendButton();
+    loadValentines(); // This will hide the section
+    
+    // Reset wallet button
+    const button = document.getElementById('connectWallet');
+    button.innerHTML = `👛 <span class="wallet-text-long">Connect Wallet</span>`;
+    button.style.backgroundColor = 'white';
 }
 
 // Update the valentine card HTML to remove the onclick
@@ -117,6 +132,7 @@ function updateValentineCardButton() {
 
 // Call this when the page loads
 document.addEventListener('DOMContentLoaded', function() {
+    loadValentines();
     updateValentineCardButton();
 });
 
@@ -290,3 +306,126 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Mock NFT data
+const mockValentines = [
+    // {
+    //     id: 1,
+    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+1",
+    //     sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    //     year: "Valentine's Day 2024",
+    //     message: "To my blockchain sweetheart! Happy Valentine's Day! 💝"
+    // },
+    // {
+    //     id: 2,
+    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+2",
+    //     sender: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+    //     year: "Valentine's Day 2024",
+    //     message: "Roses are red, violets are blue, blockchain is sweet, and so are you! 💖"
+    // },
+    // {
+    //     id: 3,
+    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+3",
+    //     sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    //     year: "Valentine's Day 2023",
+    //     message: "Last year's olove still on the chain! 💗"
+    // }
+];
+
+// Function to format address for display
+function formatAddress(address) {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+// Function to create valentine card HTML
+function createValentineCard(valentine) {
+    return `
+        <div class="received-valentine">
+            <div class="valentine-thumbnail">
+                <img src="${valentine.image}" alt="Valentine NFT" class="nft-image">
+            </div>
+            <div class="valentine-info">
+                <p class="sender">From: <a href="https://polygonscan.com/address/${valentine.sender}" 
+                    target="_blank" class="address-link">${formatAddress(valentine.sender)}</a></p>
+                <p class="year">${valentine.year}</p>
+                <p class="message">"${valentine.message}"</p>
+            </div>
+        </div>
+    `;
+}
+
+// Function to load and display valentines
+function loadValentines() {
+    const receivedSection = document.querySelector('.received-valentines');
+    const valentinesGrid = document.querySelector('.valentines-grid');
+    
+    if (!walletConnected) {
+        receivedSection.style.display = 'none';
+        return;
+    }
+    
+    receivedSection.style.display = 'block';
+    
+    // Clear existing content
+    valentinesGrid.innerHTML = '';
+    
+    // Add loading state
+    valentinesGrid.innerHTML = '<div class="loading">Loading your valentines... 💝</div>';
+    
+    // Simulate API delay
+    setTimeout(() => {
+        // Clear loading state
+        valentinesGrid.innerHTML = '';
+        
+        if (mockValentines.length === 0) {
+            valentinesGrid.innerHTML = `
+                <div class="no-valentines">
+                    <p class="heartbeat">💝 Don't worry, we love you! 💝</p>
+                    <p class="sub-text">
+                        <a href="#create-valentine" class="love-link">Spread the love - send a valentine to someone special!</a>
+                    </p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Add mock valentines
+        mockValentines.forEach(valentine => {
+            valentinesGrid.innerHTML += createValentineCard(valentine);
+        });
+        
+        // Reinitialize modal handlers
+        initializeModalHandlers();
+    }, 1500);
+}
+
+// Function to initialize modal handlers
+function initializeModalHandlers() {
+    const modal = document.getElementById('valentineModal');
+    const modalImage = modal.querySelector('.modal-image');
+    const modalSender = modal.querySelector('.sender');
+    const modalYear = modal.querySelector('.year');
+    const modalMessage = modal.querySelector('.message');
+    
+    document.querySelectorAll('.received-valentine').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.classList.contains('address-link')) {
+                return;
+            }
+            
+            const thumbnail = this.querySelector('.nft-image');
+            const sender = this.querySelector('.address-link');
+            const year = this.querySelector('.year').textContent;
+            const message = this.querySelector('.message').textContent;
+            
+            modalImage.src = thumbnail.src;
+            modalSender.innerHTML = `From: ${sender.outerHTML}`;
+            modalYear.textContent = year;
+            modalMessage.textContent = message;
+            
+            modal.style.display = 'flex';
+        });
+    });
+}
+
+// Add loading style
