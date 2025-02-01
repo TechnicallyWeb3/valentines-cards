@@ -7,13 +7,19 @@
 body {
     background-color: #ffd6e6;
     font-family: Arial, sans-serif;
+    padding-top: 70px; /* Adjust this value based on your header height */
 }
 
 header {
     background-color: #ff4d79;
     color: white;
     padding: 1rem;
-    position: relative; /* For absolute positioning context */
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .container {
@@ -637,4 +643,104 @@ html {
 /* Add some padding to account for fixed header */
 #create-valentine {
     scroll-margin-top: 100px;
-} 
+}
+
+/* Animation for when the section is targeted */
+@keyframes highlightSection {
+    0% { 
+        transform: scale(1);
+        border: 2px solid #ff4d79;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    50% { 
+        transform: scale(1.02);
+        border: 2px solid #ff4d79;
+        box-shadow: 0 8px 12px rgba(255, 77, 121, 0.3);
+    }
+    100% { 
+        transform: scale(1);
+        border: none;
+        box-shadow: none;
+    }
+}
+
+/* Target the element when it's the target of the anchor */
+.valentine-card:target {
+    animation: highlightSection 1s ease;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.address-input {
+    flex: 0.9;
+    display: flex;
+}
+
+.address-input input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid #ffb3c6;
+    border-radius: 5px;
+    height: 38px;
+    line-height: 38px;
+    box-sizing: border-box;
+}
+
+.quantity-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0.1;
+    min-width: 110px;
+}
+
+.multiply {
+    display: flex;
+    align-items: center;
+    color: #ff4d79;
+    font-size: 1.2rem;
+    font-weight: bold;
+    height: 38px;
+    line-height: 38px;
+}
+
+.quantity-input {
+    width: 70px;
+    padding: 0.5rem;
+    border: 2px solid #ffb3c6;
+    border-radius: 5px;
+    text-align: center;
+    height: 38px;
+    line-height: 38px;
+    box-sizing: border-box;
+    -moz-appearance: textfield; /* For Firefox */
+}
+
+/* Remove spinner buttons for Chrome, Safari, Edge, Opera */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .quantity-wrapper {
+        align-self: center;
+        flex: initial;
+        min-width: initial;
+    }
+}

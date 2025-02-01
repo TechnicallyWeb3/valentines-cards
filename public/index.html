@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Valentine's Day Message</title>
@@ -31,35 +30,35 @@
     </div>
     <header>
         <h1>Valentine Card NFTs</h1>
-        <button id="connectWallet" class="wallet-button">
+        <button id="connectWallet" class="wallet-button visible">
             👛 <span class="wallet-text-long">Connect Wallet</span>
             <span class="wallet-text-medium">Connect</span>
         </button>
     </header>
 
-    <div id="valentines-banner" class="valentines-banner" style="display: none;">
+    <div id="valentines-banner" class="valentines-banner" style="display: block;">
         Happy Valentine's Day! 💝
     </div>
 
-    <div class="countdown-container" id="countdown-container">
-        <div class="countdown">
-            <div class="countdown-item">
+    <div class="countdown-container minting-open" id="countdown-container">
+        <div class="countdown-label">Minting closes in:</div><div class="countdown">
+            <div class="countdown-item days-section" style="display: none;">
                 <span id="days">00</span>
                 <span class="label">Days</span>
             </div>
-            <div class="countdown-separator">:</div>
+            <div class="countdown-separator days-section" style="display: none;">:</div>
             <div class="countdown-item">
-                <span id="hours">00</span>
+                <span id="hours">12</span>
                 <span class="label">Hours</span>
             </div>
             <div class="countdown-separator">:</div>
             <div class="countdown-item">
-                <span id="minutes">00</span>
+                <span id="minutes">13</span>
                 <span class="label">Minutes</span>
             </div>
             <div class="countdown-separator">:</div>
             <div class="countdown-item">
-                <span id="seconds">00</span>
+                <span id="seconds">45</span>
                 <span class="label">Seconds</span>
             </div>
         </div>
@@ -68,7 +67,14 @@
     <div class="instructions-container">
         <h2>💝 Valentine's NFT Instructions 💝</h2>
         <div id="instructions-content">
-            <!-- Content will be populated by JavaScript -->
+            <ul>
+                <li><span class="highlight">Minting is OPEN!</span> Valentine's NFTs are available until the end of the countdown!</li>
+                <li>Connect your wallet using the button in the top right</li>
+                <li>Enter your valentine's Polygon wallet address</li>
+                <li>Choose between a random Valentine's NFT or add your custom message</li>
+                <li>Mint your unique Valentine's NFT directly to their wallet</li>
+                <li>Each NFT is unique and will be randomly selected from our collection</li>
+            </ul>
         </div>
         <div class="pricing">
             <div class="price-item">
@@ -84,18 +90,28 @@
     </div>
 
     <div class="container">
-        <div id="create-valentine" class="valentine-card" style="display: none;">
+        <div id="create-valentine" class="valentine-card" style="display: block;">
             <h2>Create Your Valentine</h2>
+            
+            <div class="input-group">
+                <div class="address-input">
+                    <input type="text" id="recipientAddress" placeholder="Recipient's Polygon Address">
+                </div>
+                <div class="quantity-wrapper" id="quantity-wrapper">
+                    <span class="multiply">×</span>
+                    <input type="number" id="quantity" value="1" min="1" max="10" class="quantity-input">
+                </div>
+            </div>
             <div class="message-toggle">
                 <input type="checkbox" id="customMessage" class="custom-checkbox">
                 <label for="customMessage">Add Custom Message (Additional 5 POL)</label>
             </div>
             <textarea id="valentineMessage" placeholder="Write your sweet message here..." style="display: none;"></textarea>
-            <input type="text" id="recipientAddress" placeholder="Recipient's Polygon Address">
-            <button onclick="sendValentine()">Send Love ❤️</button>
+
+            <button>Connect Wallet to Send</button>
         </div>
         <div id="sentMessage" class="sent-message"></div>
-        <div class="received-valentines">
+        <div class="received-valentines" style="display: none;">
             <h2>Your Received Valentines</h2>
             <div class="valentines-grid">
                 <!-- Cards will be loaded here -->
@@ -105,7 +121,7 @@
 
     <div class="valentine-modal" id="valentineModal">
         <div class="modal-content">
-            <button class="close-modal">&times;</button>
+            <button class="close-modal">×</button>
             <img class="modal-image" src="" alt="Valentine NFT">
             <div class="modal-info">
                 <p class="sender"></p>
@@ -116,5 +132,5 @@
     </div>
 
     <script src="script.js"></script>
-</body>
-</html> 
+
+ </body></html>

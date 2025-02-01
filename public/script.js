@@ -1,15 +1,16 @@
 // Development bypass - set to true to show valentine creation form regardless of date
-const DEV_MODE = true;  // Set this to false for production
+const DEV_MODE = false;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;
 
 function sendValentine() {
     const recipient = document.getElementById('recipientAddress').value;
+    const quantity = parseInt(document.getElementById('quantity').value);
     const customMessageEnabled = document.getElementById('customMessage').checked;
     const message = customMessageEnabled 
         ? document.getElementById('valentineMessage').value 
-        : "Happy Valentine's Day! 💝"; // Default message
+        : ""; // Default message
 
     if (recipient.trim() === '') {
         alert('Please enter recipient Polygon address!');
@@ -20,49 +21,66 @@ function sendValentine() {
         alert('Please enter your message!');
         return;
     }
+    if (quantity < 1 || quantity > 10) {
+        alert('Please enter a quantity between 1 and 10!');
+        return;
+    }
 
     const sentMessage = document.getElementById('sentMessage');
-    sentMessage.innerHTML = `
-        <h3>💌 Valentine Sent!</h3>
-        <p>Dear ${recipient},</p>
-        <p>${message}</p>
-        <p>With love ❤️</p>
-    `;
+    let valentinesHtml = sentMessage.innerHTML;
+    
+    for (let i = 0; i < quantity; i++) {
+        valentinesHtml += `
+            <div class="valentine-sent">
+                <h3>💌 Valentine Sent!</h3>
+                <p>To: ${recipient}</p>
+                <p>${message}</p>
+                <p>With love ❤️</p>
+            </div>
+        `;
+    }
+
+    sentMessage.innerHTML = valentinesHtml;
     sentMessage.style.display = 'block';
 
     // Clear the form
     document.getElementById('recipientAddress').value = '';
+    document.getElementById('quantity').value = '1';
     if (customMessageEnabled) {
         document.getElementById('valentineMessage').value = '';
     }
 }
 
+// function connectWallet() {
+//     if (typeof window.ethereum !== 'undefined') {
+//         try {
+//             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+//             const account = accounts[0];
+            
+//             // Update connection state
+//             walletConnected = true;
+//             updateSendButton(); // Update send button state
+            
+//             // Update button text while maintaining responsive structure
+//             const button = document.getElementById('connectWallet');
+//             button.innerHTML = `
+//                 👛 <span class="wallet-text-long">${account.slice(0, 6)}...${account.slice(-4)}</span>
+//                 <span class="wallet-text-medium">${account.slice(0, 6)}...</span>
+//             `;
+//             button.style.backgroundColor = '#e0ffe0';
+            
+//         } catch (error) {
+//             console.error('Error connecting wallet:', error);
+//             alert('Error connecting wallet. Please try again.');
+//         }
+//     } else {
+//         alert('Please install MetaMask or another Web3 wallet to connect!');
+//     }
+// }
+
 // Update the wallet connection handler
 document.getElementById('connectWallet').addEventListener('click', async () => {
-    if (typeof window.ethereum !== 'undefined') {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            const account = accounts[0];
-            
-            // Update connection state
-            walletConnected = true;
-            updateSendButton(); // Update send button state
-            
-            // Update button text while maintaining responsive structure
-            const button = document.getElementById('connectWallet');
-            button.innerHTML = `
-                👛 <span class="wallet-text-long">${account.slice(0, 6)}...${account.slice(-4)}</span>
-                <span class="wallet-text-medium">${account.slice(0, 6)}...</span>
-            `;
-            button.style.backgroundColor = '#e0ffe0';
-            
-        } catch (error) {
-            console.error('Error connecting wallet:', error);
-            alert('Error connecting wallet. Please try again.');
-        }
-    } else {
-        alert('Please install MetaMask or another Web3 wallet to connect!');
-    }
+    await connectWallet();
 });
 
 // Add new function to update send button
@@ -161,6 +179,7 @@ function updateCountdown() {
     const valentineCard = document.querySelector('.valentine-card');
     const valentinesBanner = document.getElementById('valentines-banner');
     const walletButton = document.getElementById('connectWallet');
+    const daysElements = document.querySelectorAll('.days-section');
     let targetDate;
     
     // Check if we need to update the countdown label
@@ -171,6 +190,9 @@ function updateCountdown() {
         valentinesBanner.style.display = 'block';
         valentineCard.style.display = 'block';
         walletButton.classList.add('visible');
+        
+        // Hide days section on Valentine's Day
+        daysElements.forEach(el => el.style.display = 'none');
         
         // Count down to end of Valentine's Day
         targetDate = new Date(Date.UTC(currentYear, 1, 15)); // Next day at midnight
@@ -193,6 +215,8 @@ function updateCountdown() {
         if (existingLabel) {
             existingLabel.remove();
         }
+        // Show days section when counting down to Valentine's Day
+        daysElements.forEach(el => el.style.display = 'flex');
         
         // Count down to next Valentine's Day
         targetDate = new Date(Date.UTC(currentYear, 1, 14));
@@ -222,10 +246,39 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// Add this after your existing code
+// Add quantity change handler
+document.getElementById('quantity').addEventListener('change', function() {
+    const quantity = parseInt(this.value);
+    const customMessageToggle = document.getElementById('customMessage');
+    const messageToggleContainer = document.querySelector('.message-toggle');
+    
+    if (quantity > 1) {
+        customMessageToggle.checked = false;
+        document.getElementById('valentineMessage').style.display = 'none';
+        messageToggleContainer.style.display = 'none';
+    } else {
+        messageToggleContainer.style.display = 'block';
+    }
+});
+
+// Update existing custom message handler to check quantity
 document.getElementById('customMessage').addEventListener('change', function() {
-    const messageArea = document.getElementById('valentineMessage');
-    messageArea.style.display = this.checked ? 'block' : 'none';
+    const quantity = parseInt(document.getElementById('quantity').value);
+    if (quantity > 1) {
+        this.checked = false;
+        return;
+    }
+    if (this.checked) {
+        const messageArea = document.getElementById('valentineMessage');
+        messageArea.style.display = 'block';
+        const quantityWrapper = document.getElementById('quantity-wrapper');
+        quantityWrapper.style.display = 'none';
+    } else {
+        const messageArea = document.getElementById('valentineMessage');
+        messageArea.style.display = 'none';
+        const quantityWrapper = document.getElementById('quantity-wrapper');
+        quantityWrapper.style.display = 'flex';
+    }
 });
 
 function updateInstructions() {
@@ -309,27 +362,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Mock NFT data
 const mockValentines = [
-    // {
-    //     id: 1,
-    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+1",
-    //     sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-    //     year: "Valentine's Day 2024",
-    //     message: "To my blockchain sweetheart! Happy Valentine's Day! 💝"
-    // },
-    // {
-    //     id: 2,
-    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+2",
-    //     sender: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-    //     year: "Valentine's Day 2024",
-    //     message: "Roses are red, violets are blue, blockchain is sweet, and so are you! 💖"
-    // },
-    // {
-    //     id: 3,
-    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+3",
-    //     sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    //     year: "Valentine's Day 2023",
-    //     message: "Last year's olove still on the chain! 💗"
-    // }
+    {
+        id: 1,
+        image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+1",
+        sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        year: "Valentine's Day 2024",
+        message: "To my blockchain sweetheart! Happy Valentine's Day! 💝"
+    },
+    {
+        id: 2,
+        image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+2",
+        sender: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+        year: "Valentine's Day 2024",
+        message: "Roses are red, violets are blue, blockchain is sweet, and so are you! 💖"
+    },
+    {
+        id: 3,
+        image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+3",
+        sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+        year: "Valentine's Day 2023"
+    }
 ];
 
 // Function to format address for display
