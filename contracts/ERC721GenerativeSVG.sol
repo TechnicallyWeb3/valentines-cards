@@ -71,9 +71,11 @@ abstract contract ERC721GenerativeSVG {
         string memory _traitValue,
         string memory _svg
     ) internal virtual {
-        traitData[keccak256(abi.encodePacked(_traitId))].push(
-            Trait(_traitValue, svgAssembler.setSVGLayerData(_svg, msg.sender))
+        bytes32 svgLayerAddress = svgAssembler.setSVGLayerData{value: msg.value}(
+            _svg,
+            msg.sender
         );
+        traitData[keccak256(abi.encodePacked(_traitId))].push(Trait(_traitValue, svgLayerAddress));
     }
 
     function _assembleSVG(
@@ -151,4 +153,5 @@ abstract contract ERC721GenerativeSVG {
     // events
     // errors
     error InvalidTraitId(string traitId);
+    error Unoriginal(uint256 value);
 }

@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@tw3/solidity/contracts/wttp/WebStorage.sol";
+import "./WebStorage.sol";
 
 struct SVGData {
     uint256 height;
@@ -101,6 +101,7 @@ contract SVGAssembler {
         payable
         returns (bytes32 svgLayerAddress)
     {
+        // if (msg.value > 0) revert Unoriginal(msg.value);
         DataPoint memory dataPoint = DataPoint(
             DataPointStructure(0x6973, 0x7508, 0x0101),
             bytes(svg)
@@ -111,4 +112,6 @@ contract SVGAssembler {
             publisher
         );
     }
+
+    error Unoriginal(uint256 value);
 }

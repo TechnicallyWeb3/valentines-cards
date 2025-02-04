@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./BokkyBooBahsDateTimeLibrary.sol";
-import "@tw3/solidity/contracts/wttp/WebStorage.sol";
+import "./WebStorage.sol";
 import "@openzeppelin/contracts/interfaces/IERC4906.sol";
 
 
