@@ -29,7 +29,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
             _SVGAssembler
         )
     {
-        defaultSVGData = SVGData(1000,1000,true,true, traitIds);
+        defaultSVGData = SVGData(540,756,true,true, traitIds);
         valentineDate = _valentineDate;
         mintPrice = _mintPrice;
         
