@@ -202,26 +202,43 @@ function updateValentineCardButton() {
     }
 }
 
-// Call this when the page loads
+// Update the initialization function to start timer immediately
 document.addEventListener('DOMContentLoaded', async function() {
+    // Start countdown immediately with default date
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
     try {
+        // Initialize contract date and other data
         await initializeContractDate();
-        await updatePrices();
-        loadValentines();
+        
+        // Update UI elements that depend on contract data
+        await Promise.all([
+            updatePrices(),
+            loadValentines()
+        ]);
+        
+        // Update UI elements that depend on both
         updateValentineCardButton();
-        updateCountdown();
         updateInstructions();
+        
     } catch (error) {
         console.error('Error during initialization:', error);
     }
 });
 
+// Update the initialization function to be more robust
 async function initializeContractDate() {
     try {
         const contractDate = await getValentineDate();
-        console.log('Contract date:', contractDate.month, "-", contractDate.day);
-        valentineDate = contractDate;
-        updateCountdown(); // Update display with new date
+        console.log('Contract date:', contractDate);
+        if (!contractDate || !contractDate.month || !contractDate.day) {
+            console.warn('Invalid contract date, using default');
+            valentineDate = { month: 2, day: 14 }; // Default fallback
+        } else {
+            console.log('Contract date:', contractDate.month, "-", contractDate.day);
+            valentineDate = contractDate;
+        }
     } catch (error) {
         console.error('Error initializing contract date:', error);
     }
@@ -320,10 +337,6 @@ function updateCountdown() {
 
     updateInstructions();
 }
-
-// Update countdown immediately and then every second
-updateCountdown();
-setInterval(updateCountdown, 1000);
 
 // Add quantity change handler
 document.getElementById('quantity').addEventListener('change', function() {

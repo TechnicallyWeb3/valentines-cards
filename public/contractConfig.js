@@ -22,12 +22,13 @@ export async function loadContractABI() {
 
 // Initialize contract
 export async function initializeContract() {
-    if (typeof window.ethereum === 'undefined') {
-        console.error('Web3 provider not found');
-        return null;
-    }
+    // if (typeof window.ethereum === 'undefined') {
+    //     console.error('Web3 provider not found');
+    //     return null;
+    // }
 
     const abi = await loadContractABI();
+    console.log('ABI:', abi);
     if (!abi) return null;
 
     // Updated for ethers v6
