@@ -1,9 +1,10 @@
 import { ethers } from 'ethers';
 import hre from 'hardhat';
 import { traits } from '../artwork/valentines.svg';
+import { contracts } from '../typechain-types';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 25;
+const MIN_GAS_PRICE_GWEI = 24;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
@@ -105,7 +106,7 @@ async function handleQueueTrait(): Promise<void> {
     const hashedId = ethers.keccak256(ethers.toUtf8Bytes(trait.categoryId));
     // console.log(`Hashed ID: ${hashedId}`);
     const existingTraits = await state.contracts!.valentine.getTraitData(hashedId);
-    console.log(`Existing ${trait.categoryId} Traits: ${existingTraits.length}`);
+    // console.log(`Existing ${trait.categoryId} Traits: ${existingTraits.length}`);
     const isDuplicate = existingTraits.some((existingTrait: any) => 
         existingTrait.svgAddress === dataPointAddress
     );
@@ -116,10 +117,12 @@ async function handleQueueTrait(): Promise<void> {
         return;
     }
 
+    console.log(`No existing trait found at address: ${dataPointAddress}`);
+
     state.queuedTrait = {
         ...trait,
         dataPointAddress,
-        royalty: 0n // Set to 0 since we're not checking royalties anymore
+        royalty: await state.contracts!.dpr.getRoyalty(dataPointAddress)
     };
 
     state.phase = UploadPhase.MONITOR_GAS;
@@ -157,7 +160,7 @@ async function handleTransaction(): Promise<void> {
         // );
 
         // console.log(`Estimated gas: ${gasEstimate}`);
-
+        console.log(`Royalty: ${trait.royalty}`);
         const tx = await state.contracts!.valentine.setSVGLayer(
             trait.categoryId,
             trait.name,
