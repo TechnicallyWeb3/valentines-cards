@@ -24,7 +24,7 @@ abstract contract ERC721GenerativeSVG {
 
     // state variables
     SVGAssembler internal svgAssembler;
-    mapping(bytes32 traitId => Trait[] traits) public traitData;
+    mapping(bytes32 traitId => Trait[] traits) internal traitData;
 
     bytes32[] internal traitIds;
     mapping (bytes32 traitId => string) internal traitNames;
@@ -49,6 +49,10 @@ abstract contract ERC721GenerativeSVG {
     }
 
     // functions
+    function getTraitData(bytes32 _traitId) public view returns (Trait[] memory) {
+        return traitData[_traitId];
+    }
+
     function _setTraitCategories(
         string[] memory _traitIds,
         string[] memory _traitNames

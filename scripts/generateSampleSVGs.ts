@@ -28,7 +28,7 @@ for (let i = 0; i < maxTraitsInCategory; i++) {
     return category.traits[traitIndex].svg;
   });
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 756">
     ${selectedTraits.join('\n    ')}
   </svg>`;
 

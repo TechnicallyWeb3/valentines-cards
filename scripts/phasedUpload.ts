@@ -7,7 +7,7 @@ const MIN_GAS_PRICE_GWEI = 25;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
-const VALENTINE_NFT_ADDRESS = '0x5B9e6fA2F11572327fefB1892099662daD833526';
+const VALENTINE_NFT_ADDRESS = '0x372D61a4B4A5F7C5B133F628F99879E02c9BaCCD';
 
 // State management
 enum UploadPhase {
@@ -100,10 +100,12 @@ async function handleQueueTrait(): Promise<void> {
     ]);
     const dataPointAddress = ethers.keccak256(packed);
     
+    // console.log(`Hashing Category: ${trait.categoryId}`);
     // Check for duplicates
     const hashedId = ethers.keccak256(ethers.toUtf8Bytes(trait.categoryId));
-    const existingTraits = await state.contracts!.valentine.traitData(hashedId);
-    
+    // console.log(`Hashed ID: ${hashedId}`);
+    const existingTraits = await state.contracts!.valentine.getTraitData(hashedId);
+    console.log(`Existing ${trait.categoryId} Traits: ${existingTraits.length}`);
     const isDuplicate = existingTraits.some((existingTrait: any) => 
         existingTrait.svgAddress === dataPointAddress
     );
@@ -188,29 +190,45 @@ async function handleTransaction(): Promise<void> {
 
 // Main loop
 async function processPhase(): Promise<void> {
-    // Skip gas monitoring if it's too soon
-    if (state.phase === UploadPhase.MONITOR_GAS) {
-        const now = Date.now();
-        if (!state.lastGasCheck || now - state.lastGasCheck >= GAS_CHECK_INTERVAL) {
-            await handleGasMonitoring();
-            state.lastGasCheck = now;
+    try {
+        // Skip gas monitoring if it's too soon
+        if (state.phase === UploadPhase.MONITOR_GAS) {
+            const now = Date.now();
+            if (!state.lastGasCheck || now - state.lastGasCheck >= GAS_CHECK_INTERVAL) {
+                await handleGasMonitoring();
+                state.lastGasCheck = now;
+            }
+            return;
         }
-        return;
-    }
 
-    switch (state.phase) {
-        case UploadPhase.INITIALIZE:
-            await handleInitialize();
-            break;
-        case UploadPhase.QUEUE_TRAIT:
-            await handleQueueTrait();
-            break;
-        case UploadPhase.SEND_TRANSACTION:
-            await handleTransaction();
-            break;
-        case UploadPhase.COMPLETE:
-            console.log('Upload complete!');
-            process.exit(0);
+        switch (state.phase) {
+            case UploadPhase.INITIALIZE:
+                await handleInitialize();
+                break;
+            case UploadPhase.QUEUE_TRAIT:
+                await handleQueueTrait();
+                break;
+            case UploadPhase.SEND_TRANSACTION:
+                await handleTransaction();
+                break;
+            case UploadPhase.COMPLETE:
+                console.log('Upload complete!');
+                process.exit(0);
+        }
+    } catch (error: unknown) {
+        if (
+            typeof error === 'object' && 
+            error !== null && 
+            'code' in error && 
+            (error.code === 'ETIMEDOUT' || error.code === 'ENETUNREACH')
+        ) {
+            console.log('Network error encountered, retrying in 30 seconds...');
+            await new Promise(resolve => setTimeout(resolve, 30000));
+            // The next interval will retry the operation
+        } else {
+            console.error('Unexpected error:', error);
+            process.exit(1);
+        }
     }
 }
 

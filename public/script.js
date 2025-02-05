@@ -8,7 +8,7 @@ let walletConnected = false;
 let valentineDate = { month: 2, day: 14 }; // Default until loaded
 
 
-function sendValentine() {
+async function sendValentine() {
     const recipient = document.getElementById('recipientAddress').value;
     const quantity = parseInt(document.getElementById('quantity').value);
     const customMessageEnabled = document.getElementById('customMessage').checked;
@@ -16,6 +16,7 @@ function sendValentine() {
         ? document.getElementById('valentineMessage').value 
         : ""; // Default message
 
+    // Input validation
     if (recipient.trim() === '') {
         alert('Please enter recipient Polygon address!');
         return;
@@ -31,21 +32,69 @@ function sendValentine() {
     }
 
     const sentMessage = document.getElementById('sentMessage');
-    let valentinesHtml = sentMessage.innerHTML;
-    
-    for (let i = 0; i < quantity; i++) {
-        valentinesHtml += `
-            <div class="valentine-sent">
-                <h3>💌 Valentine Sent!</h3>
-                <p>To: ${recipient}</p>
-                <p>${message}</p>
-                <p>With love ❤️</p>
+    sentMessage.innerHTML = '<div class="valentine-sending">💌 Sending your valentine(s)...</div>';
+    sentMessage.style.display = 'block';
+
+    try {
+        if (quantity === 1) {
+            // Single mint
+            const mint = window.contractConfig.getMintFunction();
+            const result = await mint(recipient, message);
+            
+            sentMessage.innerHTML = `
+                <div class="valentine-sent">
+                    <h3>💌 Valentine Sent!</h3>
+                    <p>To: ${recipient}</p>
+                    ${message ? `<p>Message: ${message}</p>` : ''}
+                    <p>Token ID: ${result.tokenId}</p>
+                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+                    ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
+                    <p>With love ❤️</p>
+                </div>
+            `;
+        } else {
+            // Batch mint
+            const batchMint = getBatchMintFunction();
+            const valentines = Array(quantity).fill().map(() => ({
+                to: recipient,
+                message: message
+            }));
+            
+            const result = await batchMint(valentines);
+            
+            let valentinesHtml = '';
+            result.mintedTokens.forEach(token => {
+                valentinesHtml += `
+                    <div class="valentine-sent">
+                        <h3>💌 Valentine Sent!</h3>
+                        <p>To: ${recipient}</p>
+                        ${message ? `<p>Message: ${message}</p>` : ''}
+                        <p>Token ID: ${token.tokenId}</p>
+                        ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
+                        <p>With love ❤️</p>
+                    </div>
+                `;
+            });
+            
+            sentMessage.innerHTML = `
+                <div class="batch-transaction">
+                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+                </div>
+                ${valentinesHtml}
+            `;
+        }
+    } catch (error) {
+        console.error('Error sending valentine:', error);
+        sentMessage.innerHTML = `
+            <div class="valentine-error">
+                <h3>❌ Error Sending Valentine</h3>
+                <p>${error.message || 'Transaction failed. Please try again.'}</p>
             </div>
         `;
+        return;
     }
-
-    sentMessage.innerHTML = valentinesHtml;
-    sentMessage.style.display = 'block';
 
     // Clear the form
     document.getElementById('recipientAddress').value = '';
