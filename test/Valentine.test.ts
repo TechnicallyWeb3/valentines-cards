@@ -185,6 +185,29 @@ describe("ValentineNFT", function () {
         ).to.not.be.reverted;
       }
     });
+
+    it("Should correctly track NFT balances", async function () {
+      await setupTraits();
+      
+      // Check initial balance
+      expect(await valentineNFT.balanceOf(owner.address)).to.equal(0);
+      
+      // Mint one NFT
+      await valentineNFT.mint(owner.address, {
+        value: ethers.parseEther("0.01")
+      });
+      
+      // Check balance after first mint
+      expect(await valentineNFT.balanceOf(owner.address)).to.equal(1);
+      
+      // Mint another NFT
+      await valentineNFT.mint(owner.address, {
+        value: ethers.parseEther("0.01")
+      });
+      
+      // Check balance after second mint
+      expect(await valentineNFT.balanceOf(owner.address)).to.equal(2);
+    });
   });
 
   describe("Batch Minting", function () {

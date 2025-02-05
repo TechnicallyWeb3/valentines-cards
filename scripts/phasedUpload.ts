@@ -3,11 +3,11 @@ import hre from 'hardhat';
 import { traits } from '../artwork/valentines.svg';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 10;
+const MIN_GAS_PRICE_GWEI = 25;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
-const VALENTINE_NFT_ADDRESS = '0x611DbCE9851b36A910284a3835145F99F28606c0';
+const VALENTINE_NFT_ADDRESS = '0x5B9e6fA2F11572327fefB1892099662daD833526';
 
 // State management
 enum UploadPhase {
@@ -100,11 +100,16 @@ async function handleQueueTrait(): Promise<void> {
     ]);
     const dataPointAddress = ethers.keccak256(packed);
     
-    // Check royalty
-    const royalty = await state.contracts!.dpr.getRoyalty(dataPointAddress);
+    // Check for duplicates
+    const hashedId = ethers.keccak256(ethers.toUtf8Bytes(trait.categoryId));
+    const existingTraits = await state.contracts!.valentine.traitData(hashedId);
+    
+    const isDuplicate = existingTraits.some((existingTrait: any) => 
+        existingTrait.svgAddress === dataPointAddress
+    );
 
-    if (royalty > 0n) {
-        console.log(`Skipping trait ${state.currentTraitIndex} - has royalty of ${royalty}`);
+    if (isDuplicate) {
+        console.log(`Skipping trait ${state.currentTraitIndex} - duplicate SVG found`);
         state.currentTraitIndex++;
         return;
     }
@@ -112,7 +117,7 @@ async function handleQueueTrait(): Promise<void> {
     state.queuedTrait = {
         ...trait,
         dataPointAddress,
-        royalty
+        royalty: 0n // Set to 0 since we're not checking royalties anymore
     };
 
     state.phase = UploadPhase.MONITOR_GAS;

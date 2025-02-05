@@ -79,11 +79,11 @@
         <div class="pricing">
             <div class="price-item">
                 <span class="price-label">Basic Valentine NFT:</span>
-                <span class="price-value">1 MATIC</span>
+                <span id="mint-price" class="price-value">1 MATIC</span>
             </div>
             <div class="price-item">
                 <span class="price-label">Custom Message Add-on:</span>
-                <span class="price-value">+5 MATIC</span>
+                <span id="message-price" class="price-value">+5 MATIC</span>
             </div>
             <div class="price-note">*Gas fees not included</div>
         </div>
@@ -131,6 +131,9 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js" 
+            type="module" crossorigin="anonymous"></script>
+    <script src="contractConfig.js" type="module"></script>
+    <script src="script.js" type="module"></script>
 
  </body></html>

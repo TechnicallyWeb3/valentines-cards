@@ -215,7 +215,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
         string memory svg = getTokenSVG(_tokenId);
 
         string memory message = valentineMetadata[_tokenId].message;
-        uint256 traitLength = traitIds.length + 1;
+        uint256 traitLength = traitIds.length + 2;
 
         string[] memory attributeParts;
 
@@ -237,6 +237,14 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
             abi.encodePacked(
                 '{"trait_type":"Mint Year","value":"',
                 Strings.toString(valentineMetadata[_tokenId].mintYear),
+                '"}'
+            )
+        );
+
+        attributeParts[traitIds.length + 1] = string(
+            abi.encodePacked(
+                '{"trait_type":"Sender","value":"',
+                Strings.toHexString(valentineMetadata[_tokenId].sender),
                 '"}'
             )
         );

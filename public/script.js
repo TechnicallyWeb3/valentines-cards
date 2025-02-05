@@ -1,8 +1,12 @@
+import { getValentineDate, fetchValentines, getMintPrices } from './contractConfig.js';
+
 // Development bypass - set to true to show valentine creation form regardless of date
 const DEV_MODE = false;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;
+let valentineDate = { month: 2, day: 14 }; // Default until loaded
+
 
 function sendValentine() {
     const recipient = document.getElementById('recipientAddress').value;
@@ -22,7 +26,7 @@ function sendValentine() {
         return;
     }
     if (quantity < 1 || quantity > 10) {
-        alert('Please enter a quantity between 1 and 10!');
+        alert('Please enter a quantity between 1 and 100!');
         return;
     }
 
@@ -84,10 +88,11 @@ document.getElementById('connectWallet').addEventListener('click', async () => {
 });
 
 // Add new function to update send button
-function updateSendButton() {
+async function updateSendButton() {
     const sendButton = document.querySelector('.valentine-card button');
     if (!walletConnected) {
-        sendButton.textContent = 'Connect Wallet to Send';
+        const prices = await getMintPrices();
+        sendButton.textContent = `Connect Wallet to Send (${prices.card} POL)`;
         sendButton.onclick = connectWallet;
     } else {
         sendButton.textContent = 'Send Love ❤️';
@@ -149,19 +154,38 @@ function updateValentineCardButton() {
 }
 
 // Call this when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadValentines();
-    updateValentineCardButton();
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        await initializeContractDate();
+        await updatePrices();
+        loadValentines();
+        updateValentineCardButton();
+        updateCountdown();
+        updateInstructions();
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
 });
+
+async function initializeContractDate() {
+    try {
+        const contractDate = await getValentineDate();
+        console.log('Contract date:', contractDate.month, "-", contractDate.day);
+        valentineDate = contractDate;
+        updateCountdown(); // Update display with new date
+    } catch (error) {
+        console.error('Error initializing contract date:', error);
+    }
+}
 
 function getCurrentUTCDate() {
     if (DEV_MODE) {
-        // In dev mode, simulate Valentine's Day by setting the date to Feb 14
+        // In dev mode, simulate Valentine's Day
         const now = new Date();
         return new Date(Date.UTC(
             now.getUTCFullYear(),
-            1,  // February (0-based)
-            14, // Valentine's Day
+            valentineDate.month - 1,  // Convert to 0-based month
+            valentineDate.day,
             now.getUTCHours(),
             now.getUTCMinutes(),
             now.getUTCSeconds()
@@ -170,10 +194,15 @@ function getCurrentUTCDate() {
     return new Date();
 }
 
+function isValentinesDay(date) {
+    return date.getUTCMonth() === (valentineDate.month - 1) && 
+           date.getUTCDate() === valentineDate.day;
+}
+
 function updateCountdown() {
     const now = getCurrentUTCDate();
     const currentYear = now.getUTCFullYear();
-    const isValentinesDay = now.getUTCMonth() === 1 && now.getUTCDate() === 14;
+    const isToday = isValentinesDay(now);
     
     const countdownContainer = document.getElementById('countdown-container');
     const valentineCard = document.querySelector('.valentine-card');
@@ -185,7 +214,7 @@ function updateCountdown() {
     // Check if we need to update the countdown label
     const existingLabel = countdownContainer.querySelector('.countdown-label');
     
-    if (isValentinesDay) {
+    if (isToday) {
         // Show Valentine's banner, minting form, and wallet button
         valentinesBanner.style.display = 'block';
         valentineCard.style.display = 'block';
@@ -195,7 +224,7 @@ function updateCountdown() {
         daysElements.forEach(el => el.style.display = 'none');
         
         // Count down to end of Valentine's Day
-        targetDate = new Date(Date.UTC(currentYear, 1, 15)); // Next day at midnight
+        targetDate = new Date(Date.UTC(currentYear, valentineDate.month - 1, valentineDate.day + 1)); // Next day at midnight
         countdownContainer.classList.add('minting-open');
         
         // Only add the label if it doesn't exist
@@ -219,9 +248,9 @@ function updateCountdown() {
         daysElements.forEach(el => el.style.display = 'flex');
         
         // Count down to next Valentine's Day
-        targetDate = new Date(Date.UTC(currentYear, 1, 14));
+        targetDate = new Date(Date.UTC(currentYear, valentineDate.month - 1, valentineDate.day));
         if (now > targetDate) {
-            targetDate = new Date(Date.UTC(currentYear + 1, 1, 14));
+            targetDate = new Date(Date.UTC(currentYear + 1, valentineDate.month - 1, valentineDate.day));
         }
         countdownContainer.classList.remove('minting-open');
     }
@@ -238,6 +267,7 @@ function updateCountdown() {
     document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
     document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
     document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    // console.log('Countdown updated:', days, hours, minutes, seconds);
 
     updateInstructions();
 }
@@ -283,11 +313,11 @@ document.getElementById('customMessage').addEventListener('change', function() {
 
 function updateInstructions() {
     const now = getCurrentUTCDate();
-    const isValentinesDay = now.getUTCMonth() === 1 && now.getUTCDate() === 14;
+    const isToday = isValentinesDay(now);
     
     const instructionsContent = document.getElementById('instructions-content');
     
-    if (isValentinesDay) {
+    if (isToday) {
         instructionsContent.innerHTML = `
             <ul>
                 <li><span class="highlight">Minting is OPEN!</span> Valentine's NFTs are available until the end of the countdown!</li>
@@ -362,26 +392,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Mock NFT data
 const mockValentines = [
-    {
-        id: 1,
-        image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+1",
-        sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-        year: "Valentine's Day 2024",
-        message: "To my blockchain sweetheart! Happy Valentine's Day! 💝"
-    },
-    {
-        id: 2,
-        image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+2",
-        sender: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-        year: "Valentine's Day 2024",
-        message: "Roses are red, violets are blue, blockchain is sweet, and so are you! 💖"
-    },
-    {
-        id: 3,
-        image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+3",
-        sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        year: "Valentine's Day 2023"
-    }
+    // {
+    //     id: 1,
+    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+1",
+    //     sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    //     year: "Valentine's Day 2024",
+    //     message: "To my blockchain sweetheart! Happy Valentine's Day! 💝"
+    // },
+    // {
+    //     id: 2,
+    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+2",
+    //     sender: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+    //     year: "Valentine's Day 2024",
+    //     message: "Roses are red, violets are blue, blockchain is sweet, and so are you! 💖"
+    // },
+    // {
+    //     id: 3,
+    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+3",
+    //     sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    //     year: "Valentine's Day 2023"
+    // }
 ];
 
 // Function to format address for display
@@ -407,29 +437,25 @@ function createValentineCard(valentine) {
 }
 
 // Function to load and display valentines
-function loadValentines() {
+async function loadValentines() {
     const receivedSection = document.querySelector('.received-valentines');
     const valentinesGrid = document.querySelector('.valentines-grid');
     
-    if (!walletConnected) {
+    if (!walletConnected || !window.ethereum) {
         receivedSection.style.display = 'none';
         return;
     }
     
     receivedSection.style.display = 'block';
-    
-    // Clear existing content
-    valentinesGrid.innerHTML = '';
-    
-    // Add loading state
     valentinesGrid.innerHTML = '<div class="loading">Loading your valentines... 💝</div>';
     
-    // Simulate API delay
-    setTimeout(() => {
-        // Clear loading state
-        valentinesGrid.innerHTML = '';
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        const address = accounts[0];
         
-        if (mockValentines.length === 0) {
+        const valentines = await fetchValentines(address);
+        
+        if (valentines.length === 0) {
             valentinesGrid.innerHTML = `
                 <div class="no-valentines">
                     <p class="heartbeat">💝 Don't worry, we love you! 💝</p>
@@ -441,14 +467,16 @@ function loadValentines() {
             return;
         }
         
-        // Add mock valentines
-        mockValentines.forEach(valentine => {
+        valentinesGrid.innerHTML = '';
+        valentines.forEach(valentine => {
             valentinesGrid.innerHTML += createValentineCard(valentine);
         });
         
-        // Reinitialize modal handlers
         initializeModalHandlers();
-    }, 1500);
+    } catch (error) {
+        console.error('Error loading valentines:', error);
+        valentinesGrid.innerHTML = '<div class="error">Error loading valentines 💔</div>';
+    }
 }
 
 // Function to initialize modal handlers
@@ -481,3 +509,34 @@ function initializeModalHandlers() {
 }
 
 // Add loading style
+
+async function updatePrices() {
+    try {
+        const prices = await getMintPrices();
+        console.log(prices);
+        
+        // Update the message toggle label with actual price
+        const messageLabel = document.querySelector('label[for="customMessage"]');
+        messageLabel.textContent = `Add Custom Message (Additional ${prices.message} POL)`;
+        
+        // Update price values using IDs
+        const mintPriceElement = document.getElementById('mint-price');
+        const messagePriceElement = document.getElementById('message-price');
+        
+        if (mintPriceElement) {
+            mintPriceElement.textContent = `${prices.card} MATIC`;
+        }
+        
+        if (messagePriceElement) {
+            messagePriceElement.textContent = `+${prices.message} MATIC`;
+        }
+        
+        // Update the main button text if wallet is not connected
+        if (!walletConnected) {
+            const sendButton = document.querySelector('.valentine-card button');
+            sendButton.textContent = `Connect Wallet to Send (${prices.card} POL)`;
+        }
+    } catch (error) {
+        console.error('Error updating prices:', error);
+    }
+}
