@@ -36,7 +36,8 @@ async function sendValentine() {
     sentMessage.style.display = 'block';
 
     try {
-        if (quantity === 1) {
+        console.log("QUANTITY: ", quantity);
+        if (!(quantity > 1)) {
             // Single mint
             const result = await mintValentine(recipient, message);
             
