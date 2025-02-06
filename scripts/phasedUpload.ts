@@ -4,7 +4,7 @@ import { traits } from '../artwork/valentines.svg';
 import { contracts } from '../typechain-types';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 24;
+const MIN_GAS_PRICE_GWEI = 10;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';

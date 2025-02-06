@@ -1,4 +1,4 @@
-import { getValentineDate, fetchValentines, getMintPrices } from './contractConfig.js';
+import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines } from './contractConfig.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
 const DEV_MODE = false;  // Set this to false for production
@@ -38,14 +38,13 @@ async function sendValentine() {
     try {
         if (quantity === 1) {
             // Single mint
-            const mint = window.contractConfig.getMintFunction();
-            const result = await mint(recipient, message);
+            const result = await mintValentine(recipient, message);
             
             sentMessage.innerHTML = `
                 <div class="valentine-sent">
                     <h3>💌 Valentine Sent!</h3>
                     <p>To: ${recipient}</p>
-                    ${message ? `<p>Message: ${message}</p>` : ''}
+                    ${message ? `<p>Message: ${message}</p>` : `<button onclick="addMessage(${result.tokenId})" class="add-message-btn">Add Message</button>`}
                     <p>Token ID: ${result.tokenId}</p>
                     <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
                         target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
@@ -55,13 +54,12 @@ async function sendValentine() {
             `;
         } else {
             // Batch mint
-            const batchMint = getBatchMintFunction();
             const valentines = Array(quantity).fill().map(() => ({
                 to: recipient,
                 message: message
             }));
             
-            const result = await batchMint(valentines);
+            const result = await batchMintValentines(valentines);
             
             let valentinesHtml = '';
             result.mintedTokens.forEach(token => {
