@@ -790,7 +790,7 @@ html {
 
 .profile-track {
     display: flex;
-    animation: scrollCards 20s linear infinite;
+    animation: scrollCards 30s linear infinite;
     width: fit-content;
 }
 
