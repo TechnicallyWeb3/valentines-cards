@@ -45,27 +45,115 @@ const profiles = [
     // Add more profiles as needed
 ];
 
+// Add this to your globals
+let recipients = [];
 
+// Add this function to create a recipient object
+function createRecipient(address = '', quantity = 1, message = '') {
+    return {
+        address,
+        quantity,
+        message,
+        expanded: false
+    };
+}
+
+// Function to render all recipients
+function renderRecipients() {
+    const container = document.querySelector('.recipients-container');
+    
+    if (recipients.length === 0) {
+        // If no recipients, show a helpful message
+        container.innerHTML = `
+            <div class="no-recipients">
+                Click "Add Recipient 💝" or choose someone from above to get started!
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = recipients.map((recipient, index) => `
+        <div class="recipient-card">
+            <div class="recipient-header">
+                <div class="address-input">
+                    <input type="text" 
+                        class="recipient-address" 
+                        value="${recipient.address}" 
+                        placeholder="Recipient's Polygon Address"
+                        onchange="updateRecipient(${index}, 'address', this.value)">
+                </div>
+                <div class="quantity-wrapper">
+                    <span class="multiply">×</span>
+                    <input type="number" 
+                        class="quantity-input" 
+                        value="${recipient.quantity}" 
+                        min="1" 
+                        max="100"
+                        onchange="updateRecipient(${index}, 'quantity', this.value)">
+                </div>
+                <button class="toggle-details" onclick="toggleRecipientDetails(${index})">
+                    ${recipient.expanded ? '▼' : '▶'}
+                </button>
+                <button class="remove-recipient" onclick="removeRecipient(${index})">×</button>
+            </div>
+            ${recipient.expanded ? `
+                <div class="recipient-details">
+                    ${Array(recipient.quantity).fill().map((_, cardIndex) => `
+                        <div class="card-message">
+                            <label>Card ${cardIndex + 1} Message:</label>
+                            <textarea 
+                                placeholder="Write your sweet message here..."
+                                onchange="updateCardMessage(${index}, ${cardIndex}, this.value)"
+                            >${recipient.messages?.[cardIndex] || ''}</textarea>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+
+    // Update the main send button text
+    updateSendButtonText();
+}
+
+// Update the recipient data
+function updateRecipient(index, field, value) {
+    recipients[index][field] = value;
+    if (field === 'quantity') {
+        recipients[index].messages = recipients[index].messages || [];
+        recipients[index].messages.length = parseInt(value);
+    }
+    renderRecipients();
+}
+
+function updateCardMessage(recipientIndex, cardIndex, message) {
+    recipients[recipientIndex].messages = recipients[recipientIndex].messages || [];
+    recipients[recipientIndex].messages[cardIndex] = message;
+}
+
+function toggleRecipientDetails(index) {
+    recipients[index].expanded = !recipients[index].expanded;
+    renderRecipients();
+}
+
+function removeRecipient(index) {
+    recipients.splice(index, 1);
+    renderRecipients();
+}
+
+function addRecipient(profileData = null) {
+    if (profileData) {
+        recipients.push(createRecipient(profileData.address, 1, ''));
+    } else {
+        recipients.push(createRecipient());
+    }
+    renderRecipients();
+}
+
+// Update the send valentine function
 async function sendValentine() {
-    const recipient = document.getElementById('recipientAddress').value;
-    const quantity = parseInt(document.getElementById('quantity').value);
-    const customMessageEnabled = document.getElementById('customMessage').checked;
-    const message = customMessageEnabled 
-        ? document.getElementById('valentineMessage').value 
-        : ""; // Default message
-
-    // Input validation
-    if (recipient.trim() === '') {
-        alert('Please enter recipient Polygon address!');
-        return;
-    }
-
-    if (customMessageEnabled && message.trim() === '') {
-        alert('Please enter your message!');
-        return;
-    }
-    if (quantity < 1 || quantity > 100) {
-        alert('Please enter a quantity between 1 and 100!');
+    if (!recipients.length) {
+        alert('Please add at least one recipient!');
         return;
     }
 
@@ -74,54 +162,43 @@ async function sendValentine() {
     sentMessage.style.display = 'block';
 
     try {
-        console.log("QUANTITY: ", quantity);
-        if (!(quantity > 1)) {
-            // Single mint
-            const result = await mintValentine(recipient, message);
-            
-            sentMessage.innerHTML = `
+        const allValentines = recipients.flatMap(recipient => 
+            Array(recipient.quantity).fill().map((_, i) => ({
+                to: recipient.address,
+                message: recipient.messages?.[i] || ''
+            }))
+        );
+
+        const result = await batchMintValentines(allValentines);
+        
+        // Update the success message display
+        let valentinesHtml = '';
+        result.mintedTokens.forEach((token, i) => {
+            const valentine = allValentines[i];
+            valentinesHtml += `
                 <div class="valentine-sent">
                     <h3>💌 Valentine Sent!</h3>
-                    <p>To: ${recipient}</p>
-                    ${message ? `<p>Message: ${message}</p>` : `<button onclick="addMessage(${result.tokenId})" class="add-message-btn">Add Message</button>`}
-                    <p>Token ID: ${result.tokenId}</p>
-                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+                    <p>To: ${valentine.to}</p>
+                    ${valentine.message ? `<p>Message: ${valentine.message}</p>` : ''}
+                    <p>Token ID: ${token.tokenId}</p>
                     ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
                     <p>With love ❤️</p>
                 </div>
             `;
-        } else {
-            // Batch mint
-            const valentines = Array(quantity).fill().map(() => ({
-                to: recipient,
-                message: message
-            }));
-            
-            const result = await batchMintValentines(valentines);
-            
-            let valentinesHtml = '';
-            result.mintedTokens.forEach(token => {
-                valentinesHtml += `
-                    <div class="valentine-sent">
-                        <h3>💌 Valentine Sent!</h3>
-                        <p>To: ${recipient}</p>
-                        ${message ? `<p>Message: ${message}</p>` : ''}
-                        <p>Token ID: ${token.tokenId}</p>
-                        ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
-                        <p>With love ❤️</p>
-                    </div>
-                `;
-            });
-            
-            sentMessage.innerHTML = `
-                <div class="batch-transaction">
-                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
-                </div>
-                ${valentinesHtml}
-            `;
-        }
+        });
+
+        sentMessage.innerHTML = `
+            <div class="batch-transaction">
+                <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+                    target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+            </div>
+            ${valentinesHtml}
+        `;
+
+        // Clear the form
+        recipients = [];
+        renderRecipients();
+
     } catch (error) {
         console.error('Error sending valentine:', error);
         sentMessage.innerHTML = `
@@ -130,14 +207,6 @@ async function sendValentine() {
                 <p>${error.message || 'Transaction failed. Please try again.'}</p>
             </div>
         `;
-        return;
-    }
-
-    // Clear the form
-    document.getElementById('recipientAddress').value = '';
-    document.getElementById('quantity').value = '1';
-    if (customMessageEnabled) {
-        document.getElementById('valentineMessage').value = '';
     }
 }
 
@@ -177,9 +246,9 @@ document.getElementById('connectWallet').addEventListener('click', async () => {
 async function updateSendButton() {
     const sendButton = document.querySelector('.valentine-card button');
     if (!walletConnected) {
-        const prices = await getMintPrices();
-        const qty = parseInt(document.getElementById('quantity').value);
-        sendButton.textContent = `Connect Wallet to Send (${prices.card * qty} POL)`;
+        // const prices = await getMintPrices();
+        // const qty = parseInt(document.getElementById('quantity').value);
+        sendButton.textContent = `Connect Wallet to Send`;
         sendButton.onclick = connectWallet;
     } else {
         sendButton.textContent = 'Send Love ❤️';
@@ -651,11 +720,11 @@ function initializeInfiniteScroll() {
 async function updatePrices() {
     try {
         const prices = await getMintPrices();
-        // console.log(prices);
+        console.log(prices);
         
         // Update the message toggle label with actual price
-        const messageLabel = document.querySelector('label[for="customMessage"]');
-        messageLabel.textContent = `Add Custom Message (Additional ${prices.message} POL)`;
+        // const messageLabel = document.querySelector('label[for="customMessage"]');
+        // messageLabel.textContent = `Add Custom Message (Additional ${prices.message} POL)`;
         
         // Update price values using IDs
         const mintPriceElement = document.getElementById('mint-price');
@@ -671,9 +740,8 @@ async function updatePrices() {
         
         // Update the main button text if wallet is not connected
         if (!walletConnected) {
-            const sendButton = document.querySelector('.valentine-card button');
-            const qty = parseInt(document.getElementById('quantity').value);
-            sendButton.textContent = `Connect Wallet to Send (${prices.card * qty} POL)`;
+            const sendButton = document.getElementById('send-connect-btn');
+            sendButton.textContent = `Connect Wallet to Send`;
         }
     } catch (error) {
         console.error('Error updating prices:', error);
@@ -696,7 +764,7 @@ function initializeCarousel() {
             <div class="profile-info">
                 <div class="profile-name">${profile.name}</div>
                 ${isValentinesDay(getCurrentUTCDate()) ? `
-                    <button class="send-valentine-btn" data-address="${profile.address}">
+                    <button class="send-valentine-btn" id="send-connect-btn">
                         Send Valentine 💝
                     </button>
                 ` : ''}
@@ -718,12 +786,32 @@ function initializeCarousel() {
         carousel.scrollLeft += e.deltaY;
     });
 
-    // Add click handlers for the send valentine buttons
-    document.querySelectorAll('.send-valentine-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const address = button.dataset.address;
-            document.getElementById('recipientAddress').value = address;
+    // Update the send valentine button click handler
+    document.getElementById('send-connect-btn').addEventListener('click', () => {
+        if (walletConnected) {
             document.getElementById('create-valentine').scrollIntoView({ behavior: 'smooth' });
-        });
+        } else {
+            connectWallet();
+        }
     });
+}
+
+// Add this function to update the send button text
+function updateSendButtonText() {
+    const sendButton = document.querySelector('.send-valentines-btn');
+    if (!sendButton) return;
+
+    if (!walletConnected) {
+        sendButton.textContent = 'Connect Wallet to Send';
+    } else {
+        const totalCards = recipients.reduce((sum, recipient) => sum + recipient.quantity, 0);
+        const totalCustomMessages = recipients.reduce((sum, recipient) => 
+            sum + (recipient.messages?.filter(msg => msg?.trim().length > 0).length || 0), 0);
+        
+        const basePrice = totalCards;
+        const messagePrice = totalCustomMessages * 5;
+        const totalPrice = basePrice + messagePrice;
+        
+        sendButton.textContent = `Send${totalCards > 1 ? " " + totalCards : ""} Valentine${totalCards !== 1 ? 's' : ''} (${totalPrice} POL)`;
+    }
 }

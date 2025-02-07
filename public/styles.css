@@ -784,69 +784,39 @@ html {
 }
 
 .profile-carousel {
-    overflow-x: auto;
+    overflow: hidden;
     position: relative;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-.profile-carousel::-webkit-scrollbar {
-    display: none;
-}
-
-/* Move fade effects to the container level and use fixed positioning relative to container */
-.carousel-container::before,
-.carousel-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    height: 100%;
-    width: 50px;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.carousel-container::before {
-    left: 0;
-    background: linear-gradient(to right, #ffd6e6, transparent);
-}
-
-.carousel-container::after {
-    right: 0;
-    background: linear-gradient(to left, #ffd6e6, transparent);
-}
-
-/* Remove the previous fade effects from .profile-carousel */
 .profile-track {
     display: flex;
-    gap: 1rem;
-    animation: scrollCards 10s linear infinite; /* Changed from 30s to 10s */
-    &:hover {
-        animation-play-state: paused;
-    }
+    animation: scrollCards 20s linear infinite;
+    width: fit-content;
 }
 
-/* Update the animation to be smoother */
+.profile-track:hover {
+    animation-play-state: paused;
+}
+
 @keyframes scrollCards {
     0% {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(calc(-50%)); /* Use calc to ensure exact half-width */
     }
 }
 
 .profile-card {
     min-width: 350px;
     padding: 1rem;
-    background: white;
+    background: transparent;
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 1.5rem;
+    flex-shrink: 0; /* Prevent cards from shrinking */
 }
 
 .profile-image-container {
@@ -867,7 +837,7 @@ html {
 
 .profile-name {
     font-weight: bold;
-    color: #333;
+    color: white;
     margin: 0;
     font-size: 1.1rem;
 }
@@ -902,4 +872,26 @@ html {
         width: 60px;
         height: 60px;
     }
+}
+
+/* Optional: Add fade effect on edges */
+.profile-carousel::before,
+.profile-carousel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.profile-carousel::before {
+    left: 0;
+    background: linear-gradient(to right, #ffd6e6, transparent);
+}
+
+.profile-carousel::after {
+    right: 0;
+    background: linear-gradient(to left, #ffd6e6, transparent);
 }
