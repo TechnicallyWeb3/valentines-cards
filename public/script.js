@@ -1,7 +1,7 @@
 import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines } from './contractConfig.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
-const DEV_MODE = false;  // Set this to false for production
+const DEV_MODE = true;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;
@@ -9,6 +9,41 @@ let valentineDate = { month: 2, day: 14 }; // Default until loaded
 let isLoading = false;
 let currentIndex = 0;
 const BATCH_SIZE = 12;
+let observer; // Add this global variable to store the observer
+let currentSlide = 0;
+const profiles = [
+    {
+        name: "Vitalik Buterin",
+        image: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Vitalik_Buterin_TechCrunch_London_2015_%28cropped%29.jpg",
+        address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    },
+    {
+        name: "Satoshi Nakamoto",
+        image: "path/to/satoshi.jpg",
+        address: "0x0000000000000000000000000000000000000000"
+    },
+    {
+        name: "Vitalik Buterin",
+        image: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Vitalik_Buterin_TechCrunch_London_2015_%28cropped%29.jpg",
+        address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    },
+    {
+        name: "Satoshi Nakamoto",
+        image: "path/to/satoshi.jpg",
+        address: "0x0000000000000000000000000000000000000000"
+    },
+    {
+        name: "Vitalik Buterin",
+        image: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Vitalik_Buterin_TechCrunch_London_2015_%28cropped%29.jpg",
+        address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    },
+    {
+        name: "Satoshi Nakamoto",
+        image: "path/to/satoshi.jpg",
+        address: "0x0000000000000000000000000000000000000000"
+    },
+    // Add more profiles as needed
+];
 
 
 async function sendValentine() {
@@ -143,7 +178,8 @@ async function updateSendButton() {
     const sendButton = document.querySelector('.valentine-card button');
     if (!walletConnected) {
         const prices = await getMintPrices();
-        sendButton.textContent = `Connect Wallet to Send (${prices.card} POL)`;
+        const qty = parseInt(document.getElementById('quantity').value);
+        sendButton.textContent = `Connect Wallet to Send (${prices.card * qty} POL)`;
         sendButton.onclick = connectWallet;
     } else {
         sendButton.textContent = 'Send Love ❤️';
@@ -224,6 +260,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateValentineCardButton();
         updateInstructions();
         
+        initializeCarousel();
     } catch (error) {
         console.error('Error during initialization:', error);
     }
@@ -344,7 +381,7 @@ document.getElementById('quantity').addEventListener('change', function() {
     const quantity = parseInt(this.value);
     const customMessageToggle = document.getElementById('customMessage');
     const messageToggleContainer = document.querySelector('.message-toggle');
-    
+    updateSendButton()
     if (quantity > 1) {
         customMessageToggle.checked = false;
         document.getElementById('valentineMessage').style.display = 'none';
@@ -453,30 +490,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Mock NFT data
-const mockValentines = [
-    // {
-    //     id: 1,
-    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+1",
-    //     sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-    //     year: "Valentine's Day 2024",
-    //     message: "To my blockchain sweetheart! Happy Valentine's Day! 💝"
-    // },
-    // {
-    //     id: 2,
-    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+2",
-    //     sender: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-    //     year: "Valentine's Day 2024",
-    //     message: "Roses are red, violets are blue, blockchain is sweet, and so are you! 💖"
-    // },
-    // {
-    //     id: 3,
-    //     image: "https://placehold.co/400x400/ffd6e6/ff4d79?text=Valentine+NFT+3",
-    //     sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    //     year: "Valentine's Day 2023"
-    // }
-];
-
 // Function to format address for display
 function formatAddress(address) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -511,7 +524,7 @@ async function loadValentines(append = false) {
     
     if (!append) {
         receivedSection.style.display = 'block';
-        valentinesGrid.innerHTML = '<div class="loading">Loading your valentines... 💝</div>';
+        valentinesGrid.innerHTML = '<div class="loading"><span class="heart-loader">💝</span> Loading your valentines...</div>';
         currentIndex = 0;
     }
     
@@ -522,7 +535,6 @@ async function loadValentines(append = false) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         const address = accounts[0];
         
-        // Use startIndex and endIndex for pagination
         const valentines = await fetchValentines(address, currentIndex, currentIndex + BATCH_SIZE);
         
         if (valentines.length === 0 && currentIndex === 0) {
@@ -551,8 +563,14 @@ async function loadValentines(append = false) {
         
         // Add loading indicator if there might be more items
         if (valentines.length === BATCH_SIZE) {
-            valentinesGrid.innerHTML += '<div class="loading-more">Loading more valentines... 💝</div>';
+            valentinesGrid.innerHTML += '<div class="loading-more"><span class="heart-loader">💝</span> Loading more valentines...</div>';
             currentIndex += BATCH_SIZE;
+            
+            // Observe the new loading indicator
+            const newLoadingMore = valentinesGrid.querySelector('.loading-more');
+            if (newLoadingMore && observer) {
+                observer.observe(newLoadingMore);
+            }
         }
         
         initializeModalHandlers();
@@ -600,7 +618,7 @@ function initializeModalHandlers() {
     });
 }
 
-// Add infinite scroll functionality
+// Update the infinite scroll initialization
 function initializeInfiniteScroll() {
     const options = {
         root: document.querySelector('.valentines-grid'),
@@ -608,7 +626,12 @@ function initializeInfiniteScroll() {
         threshold: 0.1
     };
     
-    const observer = new IntersectionObserver((entries) => {
+    // Disconnect existing observer if it exists
+    if (observer) {
+        observer.disconnect();
+    }
+    
+    observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && !isLoading) {
                 loadValentines(true);
@@ -639,19 +662,68 @@ async function updatePrices() {
         const messagePriceElement = document.getElementById('message-price');
         
         if (mintPriceElement) {
-            mintPriceElement.textContent = `${prices.card} MATIC`;
+            mintPriceElement.textContent = `${prices.card} POL`;
         }
         
         if (messagePriceElement) {
-            messagePriceElement.textContent = `+${prices.message} MATIC`;
+            messagePriceElement.textContent = `+${prices.message} POL`;
         }
         
         // Update the main button text if wallet is not connected
         if (!walletConnected) {
             const sendButton = document.querySelector('.valentine-card button');
-            sendButton.textContent = `Connect Wallet to Send (${prices.card} POL)`;
+            const qty = parseInt(document.getElementById('quantity').value);
+            sendButton.textContent = `Connect Wallet to Send (${prices.card * qty} POL)`;
         }
     } catch (error) {
         console.error('Error updating prices:', error);
     }
+}
+
+// Add this function to initialize the carousel
+function initializeCarousel() {
+    const track = document.querySelector('.profile-track');
+    const carousel = document.querySelector('.profile-carousel');
+    
+    // Create profile cards
+    profiles.forEach(profile => {
+        const card = document.createElement('div');
+        card.className = 'profile-card';
+        card.innerHTML = `
+            <div class="profile-image-container">
+                <img src="${profile.image}" alt="${profile.name}" class="profile-image">
+            </div>
+            <div class="profile-info">
+                <div class="profile-name">${profile.name}</div>
+                ${isValentinesDay(getCurrentUTCDate()) ? `
+                    <button class="send-valentine-btn" data-address="${profile.address}">
+                        Send Valentine 💝
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        track.appendChild(card);
+    });
+
+    // Duplicate cards for seamless infinite scroll
+    const cards = [...track.children];
+    cards.forEach(card => {
+        const clone = card.cloneNode(true);
+        track.appendChild(clone);
+    });
+
+    // Add wheel event handler for horizontal scrolling
+    carousel.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        carousel.scrollLeft += e.deltaY;
+    });
+
+    // Add click handlers for the send valentine buttons
+    document.querySelectorAll('.send-valentine-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const address = button.dataset.address;
+            document.getElementById('recipientAddress').value = address;
+            document.getElementById('create-valentine').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
 }

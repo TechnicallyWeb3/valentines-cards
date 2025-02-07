@@ -133,10 +133,12 @@ export async function fetchValentines(address, startIndex = 0, endIndex = null) 
         for (let i = startIndex; i < actualEndIndex; i++) {
             const tokenId = await getTokenByIndex(address, i);
             if (tokenId !== null) {
+                console.log("TOKEN ID: ", tokenId);
                 fetchPromises.push(getValentineMetadata(tokenId));
+                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
             }
         }
-
+        // console.log("FETCH PROMISES: ", fetchPromises);
         // Wait for all metadata to be fetched
         const valentines = await Promise.all(fetchPromises);
         return valentines.filter(v => v !== null);

@@ -619,19 +619,30 @@ h1 {
     color: #333;
 }
 
-.loading {
+.loading, .loading-more {
     text-align: center;
     padding: 2rem;
     font-size: 1.2rem;
     color: #ff4d79;
     grid-column: 1 / -1;
-    animation: pulse 1.5s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-@keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
+.loading .heart-loader, .loading-more .heart-loader {
+    display: inline-block;
+    animation: heartBeat 1.2s ease-in-out infinite;
+    font-size: 1.5rem;
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.3); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.3); }
+    70% { transform: scale(1); }
 }
 
 .love-link {
@@ -758,5 +769,137 @@ html {
         align-self: center;
         flex: initial;
         min-width: initial;
+    }
+}
+
+/* Add these styles */
+.valentine-suggestions {
+    margin-bottom: 2rem;
+}
+
+.carousel-container {
+    position: relative;
+    padding: 0;
+    margin-top: 1.5rem;
+}
+
+.profile-carousel {
+    overflow-x: auto;
+    position: relative;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.profile-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+/* Move fade effects to the container level and use fixed positioning relative to container */
+.carousel-container::before,
+.carousel-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.carousel-container::before {
+    left: 0;
+    background: linear-gradient(to right, #ffd6e6, transparent);
+}
+
+.carousel-container::after {
+    right: 0;
+    background: linear-gradient(to left, #ffd6e6, transparent);
+}
+
+/* Remove the previous fade effects from .profile-carousel */
+.profile-track {
+    display: flex;
+    gap: 1rem;
+    animation: scrollCards 10s linear infinite; /* Changed from 30s to 10s */
+    &:hover {
+        animation-play-state: paused;
+    }
+}
+
+/* Update the animation to be smoother */
+@keyframes scrollCards {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.profile-card {
+    min-width: 350px;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.profile-image-container {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #ff4d79;
+}
+
+.profile-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-name {
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.send-valentine-btn {
+    width: fit-content;
+    background-color: #ff4d79;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.send-valentine-btn:hover {
+    background-color: #ff1a53;
+    transform: translateY(-2px);
+}
+
+.carousel-button {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .profile-card {
+        min-width: 280px;
+    }
+    
+    .profile-image-container {
+        width: 60px;
+        height: 60px;
     }
 }
