@@ -28,7 +28,7 @@ export async function initializeContract() {
     // }
 
     const abi = await loadContractABI();
-    console.log('ABI:', abi);
+
     if (!abi) return null;
 
     // Updated for ethers v6
@@ -38,7 +38,7 @@ export async function initializeContract() {
 
 // Get Valentine's date from contract
 export async function getValentineDate() {
-    console.log('Getting Valentine date...');
+    // console.log('Getting Valentine date...');
     const contract = await initializeContract();
     if (!contract) return { month: 2, day: 14 }; // Default fallback
 

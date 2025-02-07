@@ -6,6 +6,9 @@ const DEV_MODE = false;  // Set this to false for production
 // Add at the top with other globals
 let walletConnected = false;
 let valentineDate = { month: 2, day: 14 }; // Default until loaded
+let isLoading = false;
+let currentIndex = 0;
+const BATCH_SIZE = 12;
 
 
 async function sendValentine() {
@@ -26,7 +29,7 @@ async function sendValentine() {
         alert('Please enter your message!');
         return;
     }
-    if (quantity < 1 || quantity > 10) {
+    if (quantity < 1 || quantity > 100) {
         alert('Please enter a quantity between 1 and 100!');
         return;
     }
@@ -230,12 +233,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function initializeContractDate() {
     try {
         const contractDate = await getValentineDate();
-        console.log('Contract date:', contractDate);
+        // console.log('Contract date loaded:', contractDate);
         if (!contractDate || !contractDate.month || !contractDate.day) {
             console.warn('Invalid contract date, using default');
             valentineDate = { month: 2, day: 14 }; // Default fallback
         } else {
-            console.log('Contract date:', contractDate.month, "-", contractDate.day);
             valentineDate = contractDate;
         }
     } catch (error) {
@@ -498,7 +500,7 @@ function createValentineCard(valentine) {
 }
 
 // Function to load and display valentines
-async function loadValentines() {
+async function loadValentines(append = false) {
     const receivedSection = document.querySelector('.received-valentines');
     const valentinesGrid = document.querySelector('.valentines-grid');
     
@@ -507,16 +509,23 @@ async function loadValentines() {
         return;
     }
     
-    receivedSection.style.display = 'block';
-    valentinesGrid.innerHTML = '<div class="loading">Loading your valentines... 💝</div>';
+    if (!append) {
+        receivedSection.style.display = 'block';
+        valentinesGrid.innerHTML = '<div class="loading">Loading your valentines... 💝</div>';
+        currentIndex = 0;
+    }
+    
+    if (isLoading) return;
+    isLoading = true;
     
     try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         const address = accounts[0];
         
-        const valentines = await fetchValentines(address);
+        // Use startIndex and endIndex for pagination
+        const valentines = await fetchValentines(address, currentIndex, currentIndex + BATCH_SIZE);
         
-        if (valentines.length === 0) {
+        if (valentines.length === 0 && currentIndex === 0) {
             valentinesGrid.innerHTML = `
                 <div class="no-valentines">
                     <p class="heartbeat">💝 Don't worry, we love you! 💝</p>
@@ -528,15 +537,37 @@ async function loadValentines() {
             return;
         }
         
-        valentinesGrid.innerHTML = '';
+        if (!append) {
+            valentinesGrid.innerHTML = '';
+        } else {
+            // Remove loading indicator if it exists
+            const loadingEl = valentinesGrid.querySelector('.loading-more');
+            if (loadingEl) loadingEl.remove();
+        }
+        
         valentines.forEach(valentine => {
             valentinesGrid.innerHTML += createValentineCard(valentine);
         });
         
+        // Add loading indicator if there might be more items
+        if (valentines.length === BATCH_SIZE) {
+            valentinesGrid.innerHTML += '<div class="loading-more">Loading more valentines... 💝</div>';
+            currentIndex += BATCH_SIZE;
+        }
+        
         initializeModalHandlers();
+        
+        // Initialize intersection observer only once
+        if (!append) {
+            initializeInfiniteScroll();
+        }
     } catch (error) {
         console.error('Error loading valentines:', error);
-        valentinesGrid.innerHTML = '<div class="error">Error loading valentines 💔</div>';
+        if (!append) {
+            valentinesGrid.innerHTML = '<div class="error">Error loading valentines 💔</div>';
+        }
+    } finally {
+        isLoading = false;
     }
 }
 
@@ -569,12 +600,35 @@ function initializeModalHandlers() {
     });
 }
 
+// Add infinite scroll functionality
+function initializeInfiniteScroll() {
+    const options = {
+        root: document.querySelector('.valentines-grid'),
+        rootMargin: '100px',
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isLoading) {
+                loadValentines(true);
+            }
+        });
+    }, options);
+    
+    // Observe the loading more element
+    const loadingMore = document.querySelector('.loading-more');
+    if (loadingMore) {
+        observer.observe(loadingMore);
+    }
+}
+
 // Add loading style
 
 async function updatePrices() {
     try {
         const prices = await getMintPrices();
-        console.log(prices);
+        // console.log(prices);
         
         // Update the message toggle label with actual price
         const messageLabel = document.querySelector('label[for="customMessage"]');
