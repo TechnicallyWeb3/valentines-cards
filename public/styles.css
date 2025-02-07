@@ -820,20 +820,20 @@ html {
 /* Remove the previous fade effects from .profile-carousel */
 .profile-track {
     display: flex;
-    gap: 1rem;
-    animation: scrollCards 10s linear infinite; /* Changed from 30s to 10s */
-    &:hover {
-        animation-play-state: paused;
-    }
+    animation: scrollCards 30s linear infinite;
+    width: fit-content; /* Ensure track takes full width of content */
 }
 
-/* Update the animation to be smoother */
+.profile-track:hover {
+    animation-play-state: paused;
+}
+
 @keyframes scrollCards {
     0% {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(calc(-50%)); /* Use calc to ensure exact half-width */
     }
 }
 
