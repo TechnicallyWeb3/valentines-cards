@@ -104,22 +104,22 @@
         </div>
         <div id="create-valentine" class="valentine-card" style="display: block;">
             <h2>Create Your Valentine</h2>
-            
-            <div class="input-group">
-                <div class="address-input">
-                    <input type="text" id="recipientAddress" placeholder="Recipient's Polygon Address">
+            <div class="recipient-card">
+                <div class="input-group">
+                    <div class="address-input">
+                        <input type="text" id="recipientAddress" placeholder="Recipient's Polygon Address">
+                    </div>
+                    <div class="quantity-wrapper" id="quantity-wrapper">
+                        <span class="multiply">×</span>
+                        <input type="number" id="quantity" value="1" min="1" max="10" class="quantity-input">
+                    </div>
                 </div>
-                <div class="quantity-wrapper" id="quantity-wrapper">
-                    <span class="multiply">×</span>
-                    <input type="number" id="quantity" value="1" min="1" max="10" class="quantity-input">
+                <div class="message-toggle">
+                    <input type="checkbox" id="customMessage" class="custom-checkbox">
+                    <label for="customMessage">Add Custom Message (Additional 5 POL)</label>
                 </div>
+                <textarea id="valentineMessage" placeholder="Write your sweet message here..." style="display: none;"></textarea>
             </div>
-            <div class="message-toggle">
-                <input type="checkbox" id="customMessage" class="custom-checkbox">
-                <label for="customMessage">Add Custom Message (Additional 5 POL)</label>
-            </div>
-            <textarea id="valentineMessage" placeholder="Write your sweet message here..." style="display: none;"></textarea>
-
             <button>Connect Wallet to Send</button>
         </div>
         <div id="sentMessage" class="sent-message"></div>
