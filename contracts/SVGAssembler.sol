@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./WebStorage.sol";
 
 struct SVGData {
-    uint256 width;
     uint256 height;
+    uint256 width;
     bool viewbox;
     bool base64;
     bytes32[] layers;
@@ -15,13 +15,11 @@ struct SVGData {
 
 contract SVGAssembler {
     // constructor
-    constructor(address dpsAddress, address dprAddress) {
-        dataPointStorage = DataPointStorage(dpsAddress);
+    constructor(address dprAddress) {
         dataPointRegistry = DataPointRegistry(dprAddress);
     }
 
     // state variables
-    DataPointStorage dataPointStorage;
     DataPointRegistry dataPointRegistry;
 
     // events
@@ -53,9 +51,9 @@ contract SVGAssembler {
                 abi.encodePacked(
                     svg,
                     ' height="',
-                    Strings.toString(svgData.height),
+                    svgData.height,
                     '" width="',
-                    Strings.toString(svgData.width),
+                    svgData.width,
                     '">'
                 )
             );
@@ -63,7 +61,7 @@ contract SVGAssembler {
 
         // add the layers
         for (uint256 i = 0; i < svgData.layers.length; i++) {
-            DataPoint memory layerData = dataPointStorage.readDataPoint(
+            DataPoint memory layerData = DataPointStorage(dataPointRegistry.DPS_()).readDataPoint(
                 svgData.layers[i]
             );
             require(
@@ -101,7 +99,6 @@ contract SVGAssembler {
         payable
         returns (bytes32 svgLayerAddress)
     {
-        // if (msg.value > 0) revert Unoriginal(msg.value);
         DataPoint memory dataPoint = DataPoint(
             DataPointStructure(0x6973, 0x7508, 0x0101),
             bytes(svg)
@@ -112,6 +109,4 @@ contract SVGAssembler {
             publisher
         );
     }
-
-    error Unoriginal(uint256 value);
 }

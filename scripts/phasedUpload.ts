@@ -1,14 +1,14 @@
 import { ethers } from 'ethers';
 import hre from 'hardhat';
-import { traits } from '../artwork/valentineTraits.svg';
+import { traits } from '../artwork/valentines.svg';
 import { contracts } from '../typechain-types';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 1;
+const MIN_GAS_PRICE_GWEI = 26;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
-const VALENTINE_NFT_ADDRESS = '0x372D61a4B4A5F7C5B133F628F99879E02c9BaCCD';
+const VALENTINE_NFT_ADDRESS = '0x2F2DAa6af903B01F6F87011242386F686bc61ce1';
 
 // State management
 enum UploadPhase {

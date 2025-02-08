@@ -1,7 +1,7 @@
 import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines } from './contractConfig.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
-const DEV_MODE = true;  // Set this to false for production
+const DEV_MODE = false;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;

@@ -19,7 +19,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
         string[] memory _traitLabels,
         address _SVGAssembler,
         Price memory _mintPrice,
-        Date memory _valentineDate
+        string memory _contractJson
     )
         Ownable(msg.sender)
         ERC721(_name, _symbol)
@@ -30,9 +30,9 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
         )
     {
         defaultSVGData = SVGData(540,756,true,true, traitIds);
-        valentineDate = _valentineDate;
+        valentineDate = Date(2, 14);
         mintPrice = _mintPrice;
-        
+        contractJson = _contractJson;
         // Set default royalty to 5% (500 = 5% of 10000)
         _setDefaultRoyalty(msg.sender, 500);
     }
@@ -62,11 +62,12 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
     }
 
     // state variables
+    string private contractJson;
     uint256 pseudoRandomSeed;
     SVGData internal defaultSVGData;
     Date public valentineDate;
     Price public mintPrice;
-    mapping(uint256 tokenId => ValentineMetadata) internal valentineMetadata;
+    mapping(uint256 tokenId => ValentineMetadata) public valentineMetadata;
     mapping(address => bool) public _isScheduler; // addresses of scheduler smart contracts
 
     uint256 public constant MAX_BATCH_SIZE = 100;
@@ -104,6 +105,10 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
     // owner functions
     function setPrice(Price memory _price) external onlyOwner() {
         mintPrice = _price;
+    }
+
+    function setContractJson(string memory _contractJson) external onlyOwner() {
+        contractJson = _contractJson;
     }
 
     function setSchedulerAddress(
@@ -282,6 +287,10 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
                     )
                 )
             );
+    }
+
+    function contractURI() public view returns (string memory) {
+        return contractJson;
     }
 
     // Helper function to join strings with separator

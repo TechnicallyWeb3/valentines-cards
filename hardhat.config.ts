@@ -6,6 +6,11 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0000000000000000000000000000000000000000000000000000000000000000";
+const VALENTINE_DEPLOYER = process.env.VALENTINE_DEPLOYER || "0000000000000000000000000000000000000000000000000000000000000000";
+const ALL_ACCOUNTS = [
+  VALENTINE_DEPLOYER,
+  PRIVATE_KEY,
+];
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -30,13 +35,13 @@ const config: HardhatUserConfig = {
     // Sepolia testnet
     sepolia: {
       url: "https://ethereum-sepolia.publicnode.com",
-      accounts: [PRIVATE_KEY],
+      accounts: ALL_ACCOUNTS,
       chainId: 11155111
     },
     // Polygon mainnet
     polygon: {
       url: "https://polygon-bor.publicnode.com",
-      accounts: [PRIVATE_KEY],
+      accounts: ALL_ACCOUNTS,
       chainId: 137
     },
   },
