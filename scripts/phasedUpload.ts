@@ -4,7 +4,7 @@ import { traits } from '../artwork/valentines.svg';
 import { contracts } from '../typechain-types';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 26;
+const MIN_GAS_PRICE_GWEI = 30;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
@@ -118,14 +118,19 @@ async function handleQueueTrait(): Promise<void> {
     }
 
     console.log(`No existing trait found at address: ${dataPointAddress}`);
+    try {
+        state.queuedTrait = {
+            ...trait,
+            dataPointAddress,
+            royalty: await state.contracts!.dpr.getRoyalty(dataPointAddress)
+        };
 
-    state.queuedTrait = {
-        ...trait,
-        dataPointAddress,
-        royalty: await state.contracts!.dpr.getRoyalty(dataPointAddress)
-    };
-
-    state.phase = UploadPhase.MONITOR_GAS;
+        state.phase = UploadPhase.MONITOR_GAS;
+    } catch (error) {
+        console.error('Error queuing trait:', error);
+        // Reset phase to try again
+        state.phase = UploadPhase.QUEUE_TRAIT;
+    }
 }
 
 async function handleGasMonitoring(): Promise<void> {
@@ -133,7 +138,7 @@ async function handleGasMonitoring(): Promise<void> {
     const gasPriceInGwei = ethers.formatUnits(gasPrice.gasPrice || 0n, 'gwei');
     console.log(`Current gas price: ${gasPriceInGwei} Gwei`);
 
-    if (parseFloat(gasPriceInGwei) < MIN_GAS_PRICE_GWEI) {
+    if (parseFloat(gasPriceInGwei) < MIN_GAS_PRICE_GWEI && parseFloat(gasPriceInGwei) > 0) {
         state.phase = UploadPhase.SEND_TRANSACTION;
     }
 }
