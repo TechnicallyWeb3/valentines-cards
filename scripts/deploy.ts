@@ -29,25 +29,34 @@ async function main() {
 
   // Deploy ValentineNFT
   console.log("Deploying ValentineNFT...");
-  console.log("Verifying ValentineNFT...");
-  // const ValentineNFT = await ethers.getContractFactory("ValentineNFT");
-  // const valentineNFT = await ValentineNFT.deploy(
-  await hre.run("verify:verify", {
-    address: "0x2F2DAa6af903B01F6F87011242386F686bc61ce1",
-    constructorArguments: [
-      "Valentine NFT",
-      "VNFT",
-      traitIds,
-      traitNames,
-      SVG_ASSEMBLER_ADDRESS,
-      mintPrice,
-      contractJson
-    ]
-  });
+  const ValentineNFT = await ethers.getContractFactory("ValentineNFT");
+  const valentineNFT = await ValentineNFT.deploy(
+    "Valentine NFT",
+    "VNFT", 
+    traitIds,
+    traitNames,
+    SVG_ASSEMBLER_ADDRESS,
+    mintPrice,
+    contractJson
+  );
+
+  // console.log("Verifying ValentineNFT...");
+  // await hre.run("verify:verify", {
+  //   address: "0x2F2DAa6af903B01F6F87011242386F686bc61ce1",
+  //   constructorArguments: [
+  //     "Valentine NFT",
+  //     "VNFT",
+  //     traitIds,
+  //     traitNames,
+  //     SVG_ASSEMBLER_ADDRESS,
+  //     mintPrice,
+  //     contractJson
+  //   ]
+  // });
 
   // {"name":"Valentine NFT","symbol":"VNFT","traitIds":["BACKGROUND","ILLUSTRATION","TEXT"],"traitNames":["Background","Illustration","Text"],"svgAssemblerAddress":"0x2fA6E676F8645C9D28a9D1959DBD2B41F957E7BC","mintPrice":{"card":1000000000000000,"message":5000000000000000},"contractJson":"https://eternal.cards/contract.json"}  
 
-    process.exit(0);
+    // process.exit(0);
   await valentineNFT.waitForDeployment();
   
   console.log("ValentineNFT deployed to:", await valentineNFT.getAddress());

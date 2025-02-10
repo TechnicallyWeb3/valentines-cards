@@ -33,9 +33,9 @@ const profiles = [
         address: "0xB6Aa5a1AA37a4195725cDF1576dc741d359b56bd"
     },
     {
-        name: "Mark Cuban",
-        image: "https://i.seadn.io/gae/yMiURhMqqYzfoZZUz09s1fwZqBRfQylXwN8jIYjKNpy3ClCPNCJIjJA-BuI3M6QvO6cMED9ag9l9MSow4ohiag55pUE_D_0GzBzxlA?auto=format&dpr=1&w=256",
-        address: "0xa679c6154b8d4619Af9F83f0bF9a13A680e01eCf"
+        name: "@properchaos",
+        image: "https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/bcac1f30218a27ff90eadd3c78851db7~c5_1080x1080.jpeg?lk3s=a5d48078&nonce=58942&refresh_token=c60685511cf175bfbacfdce7cd27eb02&x-expires=1739300400&x-signature=FWEf1CWjJAiLHYbbYd%2FDYGy%2FO%2Bo%3D&shp=a5d48078&shcp=81f88b70",
+        address: "0xEaa9c1Fbd89b0245994dd0162F51Ae675069F117"
     },
     {
         name: "Steve Aoki",
@@ -152,8 +152,26 @@ function addRecipient(profileData = null) {
 
 // Update the send valentine function
 async function sendValentine() {
-    if (!recipients.length) {
-        alert('Please add at least one recipient!');
+    const recipient = document.getElementById('recipientAddress').value;
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const customMessageEnabled = document.getElementById('customMessage').checked;
+    const message = customMessageEnabled 
+        ? document.getElementById('valentineMessage').value 
+        : ""; // Default message
+
+    // Input validation
+    if (recipient.trim() === '') {
+        alert('Please enter recipient Polygon address!');
+        return;
+    }
+
+    if (customMessageEnabled && message.trim() === '') {
+        alert('Please enter your message!');
+        return;
+    }
+
+    if (quantity < 1 || quantity > 100) {
+        alert('Please enter a quantity between 1 and 100!');
         return;
     }
 
@@ -162,43 +180,54 @@ async function sendValentine() {
     sentMessage.style.display = 'block';
 
     try {
-        const allValentines = recipients.flatMap(recipient => 
-            Array(recipient.quantity).fill().map((_, i) => ({
-                to: recipient.address,
-                message: recipient.messages?.[i] || ''
-            }))
-        );
+        console.log("QUANTITY: ", quantity);
+        if (!(quantity > 1)) {
+            // Single mint
+            const result = await mintValentine(recipient, message);
 
-        const result = await batchMintValentines(allValentines);
-        
-        // Update the success message display
-        let valentinesHtml = '';
-        result.mintedTokens.forEach((token, i) => {
-            const valentine = allValentines[i];
-            valentinesHtml += `
+            sentMessage.innerHTML = `
                 <div class="valentine-sent">
                     <h3>💌 Valentine Sent!</h3>
-                    <p>To: ${valentine.to}</p>
-                    ${valentine.message ? `<p>Message: ${valentine.message}</p>` : ''}
-                    <p>Token ID: ${token.tokenId}</p>
+                    <p>To: ${recipient}</p>
+                    ${message ? `<p>Message: ${message}</p>` : `<button onclick="addMessage(${result.tokenId})" class="add-message-btn">Add Message</button>`}
+                    <p>Token ID: ${result.tokenId}</p>
+                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
                     ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
                     <p>With love ❤️</p>
                 </div>
             `;
-        });
+        } else {
+            // Batch mint
+            const valentines = Array(quantity).fill().map(() => ({
+                to: recipient,
+                message: message
+            }));
 
-        sentMessage.innerHTML = `
-            <div class="batch-transaction">
-                <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-                    target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
-            </div>
-            ${valentinesHtml}
-        `;
+            const result = await batchMintValentines(valentines);
 
-        // Clear the form
-        recipients = [];
-        renderRecipients();
+            let valentinesHtml = '';
+            result.mintedTokens.forEach(token => {
+                valentinesHtml += `
+                    <div class="valentine-sent">
+                        <h3>💌 Valentine Sent!</h3>
+                        <p>To: ${recipient}</p>
+                        ${message ? `<p>Message: ${message}</p>` : ''}
+                        <p>Token ID: ${token.tokenId}</p>
+                        ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
+                        <p>With love ❤️</p>
+                    </div>
+                `;
+            });
 
+            sentMessage.innerHTML = `
+                <div class="batch-transaction">
+                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+                </div>
+                ${valentinesHtml}
+            `;
+        }
     } catch (error) {
         console.error('Error sending valentine:', error);
         sentMessage.innerHTML = `
@@ -207,6 +236,14 @@ async function sendValentine() {
                 <p>${error.message || 'Transaction failed. Please try again.'}</p>
             </div>
         `;
+        return;
+    }
+
+    // Clear the form
+    document.getElementById('recipientAddress').value = '';
+    document.getElementById('quantity').value = '1';
+    if (customMessageEnabled) {
+        document.getElementById('valentineMessage').value = '';
     }
 }
 

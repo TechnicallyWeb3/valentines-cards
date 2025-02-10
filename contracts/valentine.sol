@@ -30,7 +30,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
         )
     {
         defaultSVGData = SVGData(540,756,true,true, traitIds);
-        valentineDate = Date(2, 14);
+        valentineDate = Date(2, 11);
         mintPrice = _mintPrice;
         contractJson = _contractJson;
         // Set default royalty to 5% (500 = 5% of 10000)

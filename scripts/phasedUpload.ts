@@ -4,7 +4,7 @@ import { traits } from '../artwork/valentines.svg';
 import { contracts } from '../typechain-types';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 30;
+const MIN_GAS_PRICE_GWEI = 26;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
@@ -112,7 +112,8 @@ async function handleQueueTrait(): Promise<void> {
     );
 
     if (isDuplicate) {
-        console.log(`Skipping trait ${state.currentTraitIndex} - duplicate SVG found`);
+        const sizeKB = (Buffer.from(trait.svg).length / 1024).toFixed(2);
+        console.log(`Skipping trait ${state.currentTraitIndex} - duplicate SVG found: ${trait.categoryId} - ${trait.name} (${sizeKB} KB)`);
         state.currentTraitIndex++;
         return;
     }
@@ -145,39 +146,76 @@ async function handleGasMonitoring(): Promise<void> {
 
 async function handleTransaction(): Promise<void> {
     const currentBlock = await hre.ethers.provider.getBlockNumber();
-
+    
     try {
         if (currentBlock <= state.lastBlockWritten) {
             console.log('Waiting for next block...');
             return;
         }
+
+        // Get the block gas limit
+        const block = await hre.ethers.provider.getBlock('latest');
+        const blockGasLimit = block!.gasLimit;
+
         state.phase = UploadPhase.WAIT_FOR_TRANSACTION;
 
         const trait = state.queuedTrait!;
-        console.log(`Attempting to upload trait: ${trait.categoryId} - ${trait.name}`);
+        const sizeKB = (Buffer.from(trait.svg).length / 1024).toFixed(2);
+        console.log(`Attempting to upload trait: ${trait.categoryId} - ${trait.name} (${sizeKB} KB)`);
 
-        // // Estimate gas first
-        // const gasEstimate = await state.contracts!.valentine.setSVGLayer.estimateGas(
-        //     trait.categoryId,
-        //     trait.name,
-        //     trait.svg,
-        //     { value: trait.royalty }
-        // );
+        // Get estimated gas amount
+        const estimatedGas = await state.contracts!.valentine.setSVGLayer.estimateGas(
+            trait.categoryId,
+            trait.name,
+            trait.svg,
+            { value: trait.royalty }
+        );
 
-        // console.log(`Estimated gas: ${gasEstimate}`);
-        console.log(`Royalty: ${trait.royalty}`);
+        // Add 20% buffer but cap at 98% of block gas limit
+        const gasLimitWithBuffer = (estimatedGas * 120n) / 100n;
+        const gasLimit = gasLimitWithBuffer > (blockGasLimit * 98n) / 100n 
+            ? (blockGasLimit * 98n) / 100n 
+            : gasLimitWithBuffer;
+
+        // Get current gas price
+        const gasPrice = await hre.ethers.provider.getFeeData();
+        const maxFeePerGas = (gasPrice.maxFeePerGas! * 150n) / 100n;
+        const maxPriorityFeePerGas = (gasPrice.maxPriorityFeePerGas! * 150n) / 100n;
+
+        console.log(`
+            Royalty: ${trait.royalty}
+            Block Gas Limit: ${blockGasLimit}
+            Estimated Gas: ${estimatedGas}
+            Gas Limit: ${gasLimit}
+            Max Fee Per Gas: ${maxFeePerGas}
+            Max Priority Fee Per Gas: ${maxPriorityFeePerGas}
+        `);
+
+        // If the estimated gas is too high, skip this trait
+        if (estimatedGas > blockGasLimit) {
+            console.log(`Skipping trait - estimated gas (${estimatedGas}) exceeds block gas limit (${blockGasLimit})`);
+            state.currentTraitIndex++;
+            state.queuedTrait = null;
+            state.phase = UploadPhase.QUEUE_TRAIT;
+            return;
+        }
+
         const tx = await state.contracts!.valentine.setSVGLayer(
             trait.categoryId,
             trait.name,
             trait.svg,
             {
                 value: trait.royalty,
-                // gasLimit: gasEstimate * 120n / 100n
+                gasLimit,
+                maxFeePerGas,
+                maxPriorityFeePerGas,
             }
         );
+        
+        console.log(`Transaction submitted with hash: ${tx.hash}`);
 
         const receipt = await tx.wait();
-        console.log(`Transaction sent: ${tx.hash}`);
+        console.log(`Transaction confirmed: ${tx.hash}`);
         
         state.lastBlockWritten = receipt.blockNumber;
         state.currentTraitIndex++;

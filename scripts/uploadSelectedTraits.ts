@@ -4,7 +4,7 @@ import { traits } from '../artwork/valentines.svg';
 
 // Contract addresses
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
-const VALENTINE_NFT_ADDRESS = '0x2F2DAa6af903B01F6F87011242386F686bc61ce1'; // Polygon
+const VALENTINE_NFT_ADDRESS = '0x8998ffCCD50D3e1c29FB782b3aADDFCe768A57dA'; // Polygon
 
 async function uploadSelectedTraits(traitIndices: number[]) {
     // Initialize contracts
@@ -65,8 +65,8 @@ async function uploadSelectedTraits(traitIndices: number[]) {
 
 // Example usage:
 const selectedTraits = [
-    0,  // First background trait
-    24,  // Second body trait
+    1,  // First background trait
+    22,  // Second body trait
     14,  // First eyes trait
     // Add other indices as needed
 ];
