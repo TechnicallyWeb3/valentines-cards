@@ -1,4 +1,5 @@
 import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines } from './contractConfig.js';
+import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
 const DEV_MODE = false;  // Set this to false for production
@@ -367,6 +368,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateInstructions();
         
         initializeCarousel();
+
+        // Test TikTok functionality
+        console.log("Testing TikTok integration...");
+        
+        // Test 1: Get TikTok Data
+        console.log("Test 1: Getting TikTok user data");
+        const userData = await getTikTokData("technicallyweb3");
+        console.log("TikTok User Data:", userData);
+
+        // Test 2: Get Address (only if we got a valid userId)
+        if (userData.success) {
+            console.log("Test 2: Getting blockchain address");
+            const addressData = await getTikTokAddress(userData.userId);
+            console.log("Blockchain Address Data:", addressData);
+        }
+
+        // Test 3: Combined function
+        console.log("Test 3: Getting complete user info");
+        const completeUser = await getTikTokUser("technicallyweb3");
+        console.log("Complete User Data:", completeUser);
     } catch (error) {
         console.error('Error during initialization:', error);
     }
@@ -775,11 +796,11 @@ async function updatePrices() {
             messagePriceElement.textContent = `+${prices.message} POL`;
         }
         
-        // Update the main button text if wallet is not connected
-        if (!walletConnected) {
-            const sendButton = document.getElementById('send-connect-btn');
-            sendButton.textContent = `Connect Wallet to Send`;
-        }
+        // // Update the main button text if wallet is not connected
+        // if (!walletConnected) {
+        //     const sendButton = document.getElementById('send-connect-btn');
+        //     sendButton.textContent = `Connect Wallet to Send`;
+        // }
     } catch (error) {
         console.error('Error updating prices:', error);
     }
@@ -823,14 +844,14 @@ function initializeCarousel() {
         carousel.scrollLeft += e.deltaY;
     });
 
-    // Update the send valentine button click handler
-    document.getElementById('send-connect-btn').addEventListener('click', () => {
-        if (walletConnected) {
-            document.getElementById('create-valentine').scrollIntoView({ behavior: 'smooth' });
-        } else {
-            connectWallet();
-        }
-    });
+    // // Update the send valentine button click handler
+    // document.getElementById('send-connect-btn').addEventListener('click', () => {
+    //     if (walletConnected) {
+    //         document.getElementById('create-valentine').scrollIntoView({ behavior: 'smooth' });
+    //     } else {
+    //         connectWallet();
+    //     }
+    // });
 }
 
 // Add this function to update the send button text

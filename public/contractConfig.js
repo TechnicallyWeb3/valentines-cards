@@ -3,11 +3,13 @@ import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethe
 window.contractConfig = {};
 
 // Constants
-const CONTRACT_ADDRESS = '0xE03BFfC19945912c5b6E69492125030FAD6bf8B4';
-// const NETWORK_ID = '137'; 
-// const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
-const NETWORK_ID = '11155111';
-const RPC_URL = 'https://ethereum-sepolia.publicnode.com';
+export const VALENTINE_ADDRESS = '0xE03BFfC19945912c5b6E69492125030FAD6bf8B4';
+// export const NETWORK_ID = '137'; 
+// export const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
+export const NETWORK_ID = '11155111';
+export const RPC_URL = 'https://ethereum-sepolia.publicnode.com';
+
+
 const MAX_FETCH_SIZE = 12;
 
 // Load contract ABI
@@ -35,7 +37,7 @@ export async function initializeContract() {
 
     // Updated for ethers v6
     const provider = new ethers.JsonRpcProvider(RPC_URL);
-    return new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
+    return new ethers.Contract(VALENTINE_ADDRESS, abi, provider);
 }
 
 // Get Valentine's date from contract
@@ -202,7 +204,7 @@ export async function mintValentine(to, message = "") {
         const abi = await loadContractABI();
         if (!abi) throw new Error("Failed to load contract ABI");
         
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+        const contract = new ethers.Contract(VALENTINE_ADDRESS, abi, signer);
         const prices = await getMintPrices();
         
         // Calculate total price based on whether there's a message
@@ -290,7 +292,7 @@ export async function batchMintValentines(valentines) {
         const abi = await loadContractABI();
         if (!abi) throw new Error("Failed to load contract ABI");
         
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+        const contract = new ethers.Contract(VALENTINE_ADDRESS, abi, signer);
 
         // Validate batch size
         if (valentines.length > 100) {
@@ -372,7 +374,7 @@ async function getSigner() {
 document.addEventListener('DOMContentLoaded', () => {
     // Assign all functions to the global config object
     Object.assign(window.contractConfig, {
-        CONTRACT_ADDRESS,
+        CONTRACT_ADDRESS: VALENTINE_ADDRESS,
         NETWORK_ID,
         RPC_URL,
         getValentineDate,

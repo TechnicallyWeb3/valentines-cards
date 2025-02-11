@@ -46,7 +46,6 @@ describe("ValentineNFT", function () {
     // Deploy SVGAssembler
     const SVGAssembler = await ethers.getContractFactory("SVGAssembler");
     svgAssembler = await SVGAssembler.deploy(
-      await dataPointStorage.getAddress(),
       await dataPointRegistry.getAddress()
     );
 
@@ -59,7 +58,8 @@ describe("ValentineNFT", function () {
       traitNames,
       await svgAssembler.getAddress(),
       { card: ethers.parseEther("0.01"), message: ethers.parseEther("0.005") },
-      currentDate
+      currentDate,
+      "https://eternal.cards/contract.json"
     );
     const ValentineNFT2 = await ethers.getContractFactory("ValentineNFT");
     valentineNFT2 = await ValentineNFT2.deploy(
@@ -69,7 +69,8 @@ describe("ValentineNFT", function () {
       traitNames,
       await svgAssembler.getAddress(),
       { card: ethers.parseEther("0.01"), message: ethers.parseEther("0.005") },
-      tomorrowDate
+      tomorrowDate,
+      "https://eternal.cards/contract.json"
     );
   }
 
