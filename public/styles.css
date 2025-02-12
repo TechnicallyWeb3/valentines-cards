@@ -490,13 +490,13 @@ h1 {
 
 .valentines-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 200px);
+    grid-template-columns: repeat(auto-fill, 500px);
     gap: 1.5rem;
+    padding: 1.5rem;
     margin-top: 1rem;
     justify-content: center;
     height: 100%;
     overflow-y: auto; /* Enable vertical scrolling */
-    padding-right: 10px; /* Add padding for scrollbar */
 }
 
 /* Add smooth scrollbar styling */
@@ -515,7 +515,8 @@ h1 {
 }
 
 .received-valentine {
-    width: 200px;
+    width: 500px; /* Increased to accommodate the taller image */
+    height: 200px;
     background-color: white;
     border-radius: 10px;
     padding: 1rem;
@@ -523,6 +524,8 @@ h1 {
     transition: transform 0.2s;
     cursor: pointer;
     position: relative;
+    display: flex;
+    gap: 1rem;
 }
 
 .received-valentine:hover {
@@ -530,9 +533,12 @@ h1 {
 }
 
 .valentine-thumbnail {
-    width: 100%;
+    width: 143px; /* 5:7 ratio based on height of 200px */
+    height: 100%;
+    flex-shrink: 0;
     position: relative;
     overflow: hidden;
+    border-radius: 8px;
 }
 
 .nft-image {
@@ -901,6 +907,34 @@ html {
     .profile-image-container {
         width: 60px;
         height: 60px;
+    }
+
+    .received-valentine {
+        width: 400px;
+        height: 160px;
+    }
+
+    .valentine-thumbnail {
+        width: 114px; /* Maintains 5:7 ratio for 160px height */
+    }
+
+    .valentines-grid {
+        grid-template-columns: repeat(auto-fill, 400px);
+    }
+}
+
+@media (max-width: 480px) {
+    .received-valentine {
+        width: 320px;
+        height: 140px;
+    }
+
+    .valentine-thumbnail {
+        width: 100px; /* Maintains approximate 5:7 ratio for 140px height */
+    }
+
+    .valentines-grid {
+        grid-template-columns: repeat(auto-fill, 320px);
     }
 }
 
