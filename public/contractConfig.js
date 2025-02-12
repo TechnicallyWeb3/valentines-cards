@@ -383,23 +383,23 @@ async function getSigner() {
     return await provider.getSigner();
 }
 
-// Initialize the contract config
-document.addEventListener('DOMContentLoaded', () => {
-    // Assign all functions to the global config object
-    Object.assign(window.contractConfig, {
-        CONTRACT_ADDRESS: VALENTINE_ADDRESS,
-        NETWORK_ID,
-        RPC_URL,
-        getValentineDate,
-        initializeContract,
-        loadContractABI,
-        getBalance,
-        getTokenByIndex,
-        fetchValentines,
-        getMintPrices,
-        mintValentine,
-        batchMintValentines
-    });
+// // Initialize the contract config
+// document.addEventListener('DOMContentLoaded', () => {
+//     // Assign all functions to the global config object
+//     Object.assign(window.contractConfig, {
+//         CONTRACT_ADDRESS: VALENTINE_ADDRESS,
+//         NETWORK_ID,
+//         RPC_URL,
+//         getValentineDate,
+//         initializeContract,
+//         loadContractABI,
+//         getBalance,
+//         getTokenByIndex,
+//         fetchValentines,
+//         getMintPrices,
+//         mintValentine,
+//         batchMintValentines
+//     });
     
-    console.log('Contract config initialized');
-}); 
+//     console.log('Contract config initialized');
+// }); 

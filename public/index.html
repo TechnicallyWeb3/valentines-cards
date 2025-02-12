@@ -98,13 +98,13 @@
         <div class="valentine-suggestions">
             <h2>Send a Valentine to...</h2>
             <div class="carousel-container">
-                <button class="carousel-button prev">❮</button>
+                <!-- <button class="carousel-button prev">❮</button> -->
                 <div class="profile-carousel">
                     <div class="profile-track">
                         <!-- Profile cards will be added here via JavaScript -->
                     </div>
                 </div>
-                <button class="carousel-button next">❯</button>
+                <!-- <button class="carousel-button next">❯</button> -->
             </div>
         </div>
         <div id="create-valentine" class="valentine-card" style="display: block;">
@@ -119,17 +119,22 @@
                         <input type="number" id="qtyRecipient0" value="1" min="1" max="100" class="quantity-input">
                     </div>
                 </div>
+                <div class="customize-content" id="contentRecipient0" style="display: none;">
+                    <label for="Recipient0Message0">#1</label>
+                    <input class="custom-message-input" type="text" id="Recipient0Message0" placeholder="Write your sweet message here..."></input>
+                </div>
                 <div class="customize-tab">
-                    <button class="customize-button">
+                    <button class="customize-button" id="customizeRecipient0">
                         Customize Valentines
                         <span class="arrow-down">▼</span>
                     </button>
                 </div>
-                <div class="customize-content" style="display: none;">
-                    <textarea id="Recipient0Message0" placeholder="Write your sweet message here..."></textarea>
-                </div>
+      
             </div>
-            <button id="sendValentineButton">Connect Wallet to Send</button>
+            <div class="button-container">
+                <button id="addRecipientButton" class="add-recipient-btn">Add Recipient</button>
+                <button id="sendValentineButton">Connect Wallet to Send</button>
+            </div>
         </div>
         <div id="sentMessage" class="sent-message"></div>
         <div class="received-valentines" style="display: none;">

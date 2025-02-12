@@ -49,11 +49,90 @@ const profiles = [
 // Add this to your globals
 let recipients = [];
 
-// Call this function after the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeFirstRecipientCard();
-    document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+// // Call this function after the DOM is loaded
+// document.addEventListener('DOMContentLoaded', function() {
+//     initializeFirstRecipientCard();
+//     document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+// });
+// Update the initialization function to start timer immediately
+document.addEventListener('DOMContentLoaded', async function() {
+    // Start countdown immediately with default date
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    try {
+        // Initialize contract date and other data
+        await initializeContractDate();
+        
+        // Update UI elements that depend on contract data
+        await Promise.all([
+            updatePrices(),
+            loadValentines()
+        ]);
+        
+        // Update UI elements that depend on both
+        updateSendButton();
+        updateInstructions();
+        initializeCarousel();
+
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
 });
+
+
+// Update the wallet connection handler
+document.getElementById('connectWallet').addEventListener('click', async () => {
+    await connectWallet();
+});
+
+document.getElementById('sendValentineButton').addEventListener('click', function() {
+    if (walletConnected) {
+        sendValentine();
+    } else {
+        connectWallet();
+    }
+});
+
+document.getElementById('addRecipientButton').addEventListener('click', function() {
+    addRecipient();
+});
+
+// Add quantity change handler
+document.getElementById('qtyRecipient0').addEventListener('change', function() {
+    const quantity = parseInt(this.value);
+    console.log("Recipient 0 QUANTITY: ", quantity);
+    const customMessageToggle = document.getElementById('customMessage');
+    const messageToggleContainer = document.querySelector('.message-toggle');
+    
+    if (quantity > 1) {
+        customMessageToggle.checked = false;
+        document.getElementById('valentineMessage').style.display = 'none';
+        messageToggleContainer.style.display = 'none';
+    } else {
+        messageToggleContainer.style.display = 'block';
+    }
+});
+
+document.getElementById('customizeRecipient0').addEventListener('click', function() {
+    console.log("CUSTOMIZE RECIPIENT 0");
+    const content = document.getElementById('contentRecipient0');
+    const button = this;
+    
+    // Toggle the active class on the button
+    button.classList.toggle('active');
+    
+    // Toggle the content visibility
+    if (content.style.display === 'none' || !content.style.display) {
+        content.style.display = 'block';
+        // Optional: Add smooth animation
+        content.style.maxHeight = content.scrollHeight + 'px';
+    } else {
+        content.style.display = 'none';
+        content.style.maxHeight = null;
+    }
+});
+
 
 // Add this function to create a recipient object
 function createRecipient(address = '', quantity = 1, message = '') {
@@ -115,7 +194,7 @@ function renderRecipients() {
                     <input type="number" 
                         class="quantity-input" 
                         value="${recipient.quantity}" 
-                        min="1" 
+                        min="0" 
                         max="100"
                         onchange="updateRecipient(${index}, 'quantity', this.value)">
                 </div>
@@ -175,6 +254,7 @@ function removeRecipient(index) {
 }
 
 function addRecipient(profileData = null) {
+    console.log("ADDING RECIPIENT");
     if (profileData) {
         recipients.push(createRecipient(profileData.address, 1, ''));
     } else {
@@ -185,6 +265,7 @@ function addRecipient(profileData = null) {
 
 // Update the send valentine function
 async function sendValentine() {
+    console.log("SENDING VALENTINE");
     const recipient = document.getElementById('recipientAddress').value;
     const quantity = parseInt(document.getElementById('quantity').value);
     const customMessageEnabled = document.getElementById('customMessage').checked;
@@ -194,12 +275,7 @@ async function sendValentine() {
 
     // Input validation
     if (recipient.trim() === '') {
-        alert('Please enter recipient Polygon address!');
-        return;
-    }
-
-    if (customMessageEnabled && message.trim() === '') {
-        alert('Please enter your message!');
+        alert('Please enter at least one recipient Polygon address!');
         return;
     }
 
@@ -280,10 +356,6 @@ async function sendValentine() {
     }
 }
 
-// Update the wallet connection handler
-document.getElementById('connectWallet').addEventListener('click', async () => {
-    await connectWallet();
-});
 
 // Add new function to update send button
 async function updateSendButton() {
@@ -386,65 +458,19 @@ function disconnectWallet() {
     button.style.backgroundColor = 'white';
 }
 
-// Update the valentine card HTML to remove the onclick
-function updateValentineCardButton() {
-    const valentineCard = document.querySelector('.valentine-card');
-    if (valentineCard) {
-        const buttonHtml = `<button>Connect Wallet to Send</button>`;
-        // Find and replace the existing button
-        const existingButton = valentineCard.querySelector('button:nth-of-type(2)');
-        if (existingButton) {
-            existingButton.outerHTML = buttonHtml;
-        }
-        updateSendButton();
-    }
-}
-
-// Update the initialization function to start timer immediately
-document.addEventListener('DOMContentLoaded', async function() {
-    // Start countdown immediately with default date
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
-    try {
-        // Initialize contract date and other data
-        await initializeContractDate();
-        
-        // Update UI elements that depend on contract data
-        await Promise.all([
-            updatePrices(),
-            loadValentines()
-        ]);
-        
-        // Update UI elements that depend on both
-        updateValentineCardButton();
-        updateInstructions();
-        
-        initializeCarousel();
-
-        // Test TikTok functionality
-        console.log("Testing TikTok integration...");
-        
-        // Test 1: Get TikTok Data
-        console.log("Test 1: Getting TikTok user data");
-        const userData = await getTikTokData("technicallyweb3");
-        console.log("TikTok User Data:", userData);
-
-        // Test 2: Get Address (only if we got a valid userId)
-        if (userData.success) {
-            console.log("Test 2: Getting blockchain address");
-            const addressData = await getTikTokAddress(userData.userId);
-            console.log("Blockchain Address Data:", addressData);
-        }
-
-        // Test 3: Combined function
-        console.log("Test 3: Getting complete user info");
-        const completeUser = await getTikTokUser("technicallyweb3");
-        console.log("Complete User Data:", completeUser);
-    } catch (error) {
-        console.error('Error during initialization:', error);
-    }
-});
+// // Update the valentine card HTML to remove the onclick
+// function updateValentineCardButton() {
+//     const valentineCard = document.querySelector('.valentine-card');
+//     if (valentineCard) {
+//         const buttonHtml = `<button>Connect Wallet to Send</button>`;
+//         // Find and replace the existing button
+//         const existingButton = valentineCard.querySelector('button:nth-of-type(2)');
+//         if (existingButton) {
+//             existingButton.outerHTML = buttonHtml;
+//         }
+//         updateSendButton();
+//     }
+// }
 
 // Update the initialization function to be more robust
 async function initializeContractDate() {
@@ -556,39 +582,6 @@ function updateCountdown() {
     updateInstructions();
 }
 
-// Add quantity change handler
-document.getElementById('quantity').addEventListener('change', function() {
-    const quantity = parseInt(this.value);
-    const customMessageToggle = document.getElementById('customMessage');
-    const messageToggleContainer = document.querySelector('.message-toggle');
-    updateSendButton()
-    if (quantity > 1) {
-        customMessageToggle.checked = false;
-        document.getElementById('valentineMessage').style.display = 'none';
-        messageToggleContainer.style.display = 'none';
-    } else {
-        messageToggleContainer.style.display = 'block';
-    }
-});
-
-// Replace the existing custom message handler with this new one
-document.addEventListener('click', function(e) {
-    if (e.target.closest('.customize-button')) {
-        const button = e.target.closest('.customize-button');
-        const content = button.closest('.recipient-card').querySelector('.customize-content');
-        
-        button.classList.toggle('active');
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            // Optional: Smooth animation
-            content.style.maxHeight = content.scrollHeight + 'px';
-        } else {
-            content.style.display = 'none';
-            content.style.maxHeight = null;
-        }
-    }
-});
-
 function updateInstructions() {
     const now = getCurrentUTCDate();
     const isToday = isValentinesDay(now);
@@ -620,53 +613,7 @@ function updateInstructions() {
     }
 }
 
-// Initial call
-updateInstructions();
 
-// Add modal functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('valentineModal');
-    const modalImage = modal.querySelector('.modal-image');
-    const modalSender = modal.querySelector('.sender');
-    const modalYear = modal.querySelector('.year');
-    const modalMessage = modal.querySelector('.message');
-    
-    // Add click handlers to all valentine cards
-    document.querySelectorAll('.received-valentine').forEach(card => {
-        card.addEventListener('click', function() {
-            const thumbnail = this.querySelector('.nft-image');
-            const sender = this.querySelector('.sender').textContent;
-            const year = this.querySelector('.year').textContent;
-            const message = this.querySelector('.message').textContent;
-            
-            modalImage.src = thumbnail.src;
-            modalSender.textContent = sender;
-            modalYear.textContent = year;
-            modalMessage.textContent = message;
-            
-            modal.style.display = 'flex';
-        });
-    });
-    
-    // Close modal when clicking the close button
-    modal.querySelector('.close-modal').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    
-    // Close modal when clicking outside
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-    
-    // Close modal with escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.style.display === 'flex') {
-            modal.style.display = 'none';
-        }
-    });
-});
 
 // Function to format address for display
 function formatAddress(address) {
@@ -907,7 +854,7 @@ function initializeCarousel() {
 
 // Add this function to update the send button text
 function updateSendButtonText() {
-    const sendButton = document.querySelector('.send-valentines-btn');
+    const sendButton = document.getElementById('sendValentineButton');
     if (!sendButton) return;
 
     if (!walletConnected) {
