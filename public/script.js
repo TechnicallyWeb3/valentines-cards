@@ -311,7 +311,7 @@ function addRecipient(profileIndex = null) {
     let profileName = "";
     
     // Add to data array
-    if (profileIndex) {
+    if (profileIndex !== null) {
         if (profileIndex > profiles.length - 1) {
             profileIndex = null;
             console.error("NON EXISTING PROFILE INDEX", profileIndex);
@@ -321,6 +321,7 @@ function addRecipient(profileIndex = null) {
         recipients.push(createRecipient(profiles[profileIndex].address, 1, ''));
         profileName = `<span class="profile-name">${profiles[profileIndex].name}</span>`;
     } else {
+        console.log("ADDING NEW RECIPIENT", recipients.length);
         recipients.push(createRecipient());
     }
     
@@ -376,24 +377,40 @@ function addRecipient(profileIndex = null) {
 
 window.addRecipient = addRecipient;
 
+function buildValentineArray() {
+    valentines = [];
+    for (let i = 0; i < recipients.length; i++) {
+        if (recipients[i].address !== "") {
+            for (let j = 0; j < recipients[i].quantity; j++) {
+                valentines.push({
+                    to: recipients[i].address.trim(),
+                    message: recipients[i].messages?.[j] || ""
+                });
+            }
+        } else {
+            if (recipients[i].quantity > 1) {
+                alert("Did you forget to add an address to recipient #" + (i + 1) + "?");
+                return [];
+            }
+        }
+    }
+    return valentines;
+    
+}
+
 // Update the send valentine function
 async function sendValentine() {
     console.log("SENDING VALENTINE");
-    const recipient = document.getElementById('recipientAddress').value;
-    const quantity = parseInt(document.getElementById('quantity').value);
-    const customMessageEnabled = document.getElementById('customMessage').checked;
-    const message = customMessageEnabled 
-        ? document.getElementById('valentineMessage').value 
-        : ""; // Default message
+    const valentines = buildValentineArray();
 
     // Input validation
-    if (recipient.trim() === '') {
-        alert('Please enter at least one recipient Polygon address!');
+    if (valentines.length === 0) {
+        console.error('No valentines to send');
         return;
     }
 
-    if (quantity < 1 || quantity > 100) {
-        alert('Please enter a quantity between 1 and 100!');
+    if (valentines.length > 100) {
+        alert('You are trying to send too many valentines! Please limit your order to 100 valentines at a time.');
         return;
     }
 
@@ -406,48 +423,27 @@ async function sendValentine() {
     
 
     try {
-        console.log("QUANTITY: ", quantity);
-        if (!(quantity > 1)) {
-            // Single mint
-            const result = await mintValentine(recipient, message);
-               receivedSection.style.display = 'block'
-               sentMessage.style.display = 'none';
+        // Batch mint
+        const result = await batchMintValentines(valentines);
+        sentMessage.style.display = 'none';
+            receivedSection.style.display = 'block'
 
-            const metadata = await getValentineMetadata(result.tokenId);
-            valentinesGrids.innerHTML = createValentineSentCard(metadata);
-        } else {
-            // Batch mint
-            const valentines = Array(quantity).fill().map(() => ({
-                to: recipient,
-                message: message
-            }));
+        // Fetch metadata for all minted tokens
+        const metadataPromises = result.mintedTokens.map(token => getValentineMetadata(token.tokenId));
+        const metadataArray = await Promise.all(metadataPromises);
 
-            const result = await batchMintValentines(valentines);
-            sentMessage.style.display = 'none';
-               receivedSection.style.display = 'block'
+        let valentinesHtml = metadataArray.map(metadata => createValentineSentCard(metadata)).join('');
 
-          // Fetch metadata for all minted tokens
-          const metadataPromises = result.mintedTokens.map(token => getValentineMetadata(token.tokenId));
-          const metadataArray = await Promise.all(metadataPromises);
-
-          let valentinesHtml = metadataArray.map(metadata => createValentineSentCard(metadata)).join('');
-        //   receivedSection.innerHTML = `
-        //       <div class="batch-transaction">
-        //           <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-        //               target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
-        //       </div>
-    
-        //   `;
-          valentinesGrids.innerHTML = `
-              ${valentinesHtml}
-          `;
-        }
+        valentinesGrids.innerHTML = `
+            ${valentinesHtml}
+        `;
+        
     } catch (error) {
         console.error('Error sending valentine:', error);
         sentMessage.innerHTML = `
             <div class="valentine-error">
                 <h3>❌ Error Sending Valentine</h3>
-                <p>${error.message || 'Transaction failed. Please try again.'}</p>
+                <p>${'Transaction failed. Please try again.'}</p>
             </div>
         `;
         return;
@@ -466,13 +462,9 @@ async function sendValentine() {
 async function updateSendButton() {
     const sendButton = document.getElementById('sendValentineButton');
     if (!walletConnected) {
-        // const prices = await getMintPrices();
-        // const qty = parseInt(document.getElementById('quantity').value);
         sendButton.textContent = `Connect Wallet to Send`;
-        sendButton.onclick = connectWallet;
     } else {
         sendButton.textContent = 'Send Love ❤️';
-        sendButton.onclick = sendValentine;
     }
 }
 
@@ -792,8 +784,6 @@ async function loadValentines(append = false) {
             }
         }
         
-        initializeModalHandlers();
-        
         // Initialize intersection observer only once
         if (!append) {
             initializeInfiniteScroll();
@@ -906,26 +896,6 @@ function initializeCarousel() {
         e.preventDefault();
         carousel.scrollLeft += e.deltaY;
     });
-}
-
-// Add this function to update the send button text
-function updateSendButtonText() {
-    const sendButton = document.getElementById('sendValentineButton');
-    if (!sendButton) return;
-
-    if (!walletConnected) {
-        sendButton.textContent = 'Connect Wallet to Send';
-    } else {
-        const totalCards = recipients.reduce((sum, recipient) => sum + recipient.quantity, 0);
-        const totalCustomMessages = recipients.reduce((sum, recipient) => 
-            sum + (recipient.messages?.filter(msg => msg?.trim().length > 0).length || 0), 0);
-        
-        const basePrice = totalCards;
-        const messagePrice = totalCustomMessages * 5;
-        const totalPrice = basePrice + messagePrice;
-        
-        sendButton.textContent = `Send${totalCards > 1 ? " " + totalCards : ""} Valentine${totalCards !== 1 ? 's' : ''} (${totalPrice} POL)`;
-    }
 }
 
 // // Function to initialize the first recipient card
