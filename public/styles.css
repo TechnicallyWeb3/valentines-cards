@@ -1224,8 +1224,26 @@ html {
 }
 
 .customize-content {
+    display: none;
     overflow: hidden;
     transition: all 0.3s ease;
+}
+
+/* Show content when button is active */
+.customize-button.active + .customize-content {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .customize-content label {

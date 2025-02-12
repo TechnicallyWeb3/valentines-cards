@@ -102,16 +102,24 @@ document.getElementById('addRecipientButton').addEventListener('click', function
 document.getElementById('qtyRecipient0').addEventListener('change', function() {
     const quantity = parseInt(this.value);
     console.log("Recipient 0 QUANTITY: ", quantity);
-    const customMessageToggle = document.getElementById('customMessage');
-    const messageToggleContainer = document.querySelector('.message-toggle');
+    const customizeContent = document.getElementById('contentRecipient0');
     
-    if (quantity > 1) {
-        customMessageToggle.checked = false;
-        document.getElementById('valentineMessage').style.display = 'none';
-        messageToggleContainer.style.display = 'none';
-    } else {
-        messageToggleContainer.style.display = 'block';
+    // Clear existing content
+    customizeContent.innerHTML = '';
+    
+    // Add message fields based on quantity
+    for (let i = 0; i < quantity; i++) {
+        const messageContainer = document.createElement('div');
+        messageContainer.innerHTML = `
+            <label for="recipient0Message${i}">#${i + 1}</label>
+            <input class="custom-message-input" 
+                   type="text" 
+                   id="recipient0Message${i}" 
+                   placeholder="Write your sweet message here...">
+        `;
+        customizeContent.appendChild(messageContainer);
     }
+    customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
 });
 
 document.getElementById('customizeRecipient0').addEventListener('click', function() {
