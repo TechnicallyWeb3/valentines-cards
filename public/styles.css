@@ -23,7 +23,7 @@ header {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 2rem auto;
     padding: 0 1rem;
     position: relative;
@@ -254,17 +254,6 @@ h1 {
     }
 }
 
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.5rem;
-    }
-    
-    .wallet-button {
-        font-size: 0.8rem;
-        padding: 0.4rem 0.8rem;
-    }
-}
-
 .wallet-button.visible {
     display: inline-flex; /* Show when class is added */
 }
@@ -473,7 +462,7 @@ h1 {
 .received-valentines {
     display: none;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 2rem;
+    padding: 1rem;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     backdrop-filter: blur(5px);
@@ -490,13 +479,14 @@ h1 {
 
 .valentines-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 200px);
-    gap: 1.5rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fill, 400px);
+    gap: 0.5rem;
+    padding: 0.5rem;
+    padding-bottom: 2rem;
     justify-content: center;
     height: 100%;
     overflow-y: auto; /* Enable vertical scrolling */
-    padding-right: 10px; /* Add padding for scrollbar */
+    /* padding-right: 10px; Add padding for scrollbar */
 }
 
 /* Add smooth scrollbar styling */
@@ -515,14 +505,18 @@ h1 {
 }
 
 .received-valentine {
-    width: 200px;
+    height: 250px;
+    width: 350px;
     background-color: white;
-    border-radius: 10px;
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.2s;
     cursor: pointer;
     position: relative;
+    display: flex;
+    gap: 1rem;
+    border-radius: 10px;
+    margin: auto;
 }
 
 .received-valentine:hover {
@@ -530,13 +524,13 @@ h1 {
 }
 
 .valentine-thumbnail {
-    width: 100%;
+    height: 100%;
+    flex-shrink: 0;
     position: relative;
     overflow: hidden;
 }
 
 .nft-image {
-    width: 100%;
     height: 100%;
     object-fit: cover;
 }
@@ -599,24 +593,37 @@ h1 {
 }
 
 .valentine-info {
-    text-align: center;
-}
-
-.sender {
-    color: #ff4d79;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
+    flex: 1;
+    max-width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: right;
+    overflow: hidden;
 }
 
 .year {
     color: #666;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.sender {
+    color: #ff4d79;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
 }
 
 .message {
     font-style: italic;
     color: #333;
+    font-size: 0.9rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    margin: 0;
 }
 
 .loading, .loading-more {
@@ -893,17 +900,6 @@ html {
     display: none;
 }
 
-@media (max-width: 768px) {
-    .profile-card {
-        min-width: 280px;
-    }
-    
-    .profile-image-container {
-        width: 60px;
-        height: 60px;
-    }
-}
-
 .recipient-card {
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 12px;
@@ -1043,4 +1039,59 @@ html {
     outline: none; /* Remove outline on focus */
     border-left: 1px solid rgb(255, 255, 255); /* Left border */
     border-right: 1px solid rgb(255, 255, 255); /* Right border */
+}
+
+/* Combine all styles for screens below 768px */
+@media (max-width: 768px) {
+    .container {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Remove rounded corners from various containers */
+    .valentine-card,
+    .sent-message,
+    .countdown-container,
+    .instructions-container,
+    .received-valentines,
+    .received-valentine,
+    .modal-content,
+    .recipient-card,
+    .no-valentines {
+        border-radius: 0;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .wallet-button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .received-valentine {
+        width: 400px;
+        height: 160px;
+    }
+
+    .valentines-grid {
+        grid-template-columns: repeat(auto-fill, 400px);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .received-valentine {
+        width: 275px;
+        height: 140px;
+    }
+
+    .valentine-thumbnail {
+        height: 100%;
+    }
+
+    .valentines-grid {
+        grid-template-columns: repeat(auto-fill, 320px);
+    }
 }

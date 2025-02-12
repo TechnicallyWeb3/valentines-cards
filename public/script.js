@@ -688,10 +688,10 @@ function createValentineCard(valentine) {
                 <img src="${valentine.image}" alt="Valentine NFT" class="nft-image">
             </div>
             <div class="valentine-info">
+                <p class="year">${valentine.year}</p>
                 <p class="sender">From: <a href="https://polygonscan.com/address/${valentine.sender}" 
                     target="_blank" class="address-link">${formatAddress(valentine.sender)}</a></p>
-                <p class="year">${valentine.year}</p>
-                <p class="message">"${valentine.message}"</p>
+                ${valentine.message ? `<br><p class="message">"${valentine.message}"</p>` : ''}
             </div>
         </div>
     `;
@@ -782,25 +782,25 @@ function initializeModalHandlers() {
     const modalYear = modal.querySelector('.year');
     const modalMessage = modal.querySelector('.message');
     
-    document.querySelectorAll('.received-valentine').forEach(card => {
-        card.addEventListener('click', function(e) {
-            if (e.target.classList.contains('address-link')) {
-                return;
-            }
+    // document.querySelectorAll('.received-valentine').forEach(card => {
+    //     card.addEventListener('click', function(e) {
+    //         if (e.target.classList.contains('address-link')) {
+    //             return;
+    //         }
             
-            const thumbnail = this.querySelector('.nft-image');
-            const sender = this.querySelector('.address-link');
-            const year = this.querySelector('.year').textContent;
-            const message = this.querySelector('.message').textContent;
+    //         const thumbnail = this.querySelector('.nft-image');
+    //         const sender = this.querySelector('.address-link');
+    //         const year = this.querySelector('.year').textContent;
+    //         const message = this.querySelector('.message').textContent;
             
-            modalImage.src = thumbnail.src;
-            modalSender.innerHTML = `From: ${sender.outerHTML}`;
-            modalYear.textContent = year;
-            modalMessage.textContent = message;
+    //         modalImage.src = thumbnail.src;
+    //         modalSender.innerHTML = `From: ${sender.outerHTML}`;
+    //         modalYear.textContent = year;
+    //         modalMessage.textContent = message;
             
-            modal.style.display = 'flex';
-        });
-    });
+    //         modal.style.display = 'flex';
+    //     });
+    // });
 }
 
 // Update the infinite scroll initialization
