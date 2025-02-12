@@ -62,7 +62,7 @@ function createRecipient(address = '', quantity = 1, message = '') {
 // Function to render all recipients
 function renderRecipients() {
     const container = document.querySelector('.recipients-container');
-    
+
     if (recipients.length === 0) {
         // If no recipients, show a helpful message
         container.innerHTML = `
@@ -72,7 +72,7 @@ function renderRecipients() {
         `;
         return;
     }
-    
+
     container.innerHTML = recipients.map((recipient, index) => `
         <div class="recipient-card">
             <div class="recipient-header">
@@ -156,8 +156,8 @@ async function sendValentine() {
     const recipient = document.getElementById('recipientAddress').value;
     const quantity = parseInt(document.getElementById('quantity').value);
     const customMessageEnabled = document.getElementById('customMessage').checked;
-    const message = customMessageEnabled 
-        ? document.getElementById('valentineMessage').value 
+    const message = customMessageEnabled
+        ? document.getElementById('valentineMessage').value
         : ""; // Default message
 
     // Input validation
@@ -181,16 +181,16 @@ async function sendValentine() {
     const valentinesGrids = document.querySelector('.valentines-grids');
     sentMessage.innerHTML = '<div class="valentine-sending">💌 Sending your valentine(s)...</div>';
     sentMessage.style.display = 'block';
- 
-    
+
+
 
     try {
         console.log("QUANTITY: ", quantity);
         if (!(quantity > 1)) {
             // Single mint
             const result = await mintValentine(recipient, message);
-               receivedSection.style.display = 'block'
-               sentMessage.style.display = 'none';
+            receivedSection.style.display = 'block'
+            sentMessage.style.display = 'none';
 
             const metadata = await getValentineMetadata(result.tokenId);
             valentinesGrids.innerHTML = createValentineSentCard(metadata);
@@ -203,21 +203,21 @@ async function sendValentine() {
 
             const result = await batchMintValentines(valentines);
             sentMessage.style.display = 'none';
-               receivedSection.style.display = 'block'
+            receivedSection.style.display = 'block'
 
-          // Fetch metadata for all minted tokens
-          const metadataPromises = result.mintedTokens.map(token => getValentineMetadata(token.tokenId));
-          const metadataArray = await Promise.all(metadataPromises);
+            // Fetch metadata for all minted tokens
+            const metadataPromises = result.mintedTokens.map(token => getValentineMetadata(token.tokenId));
+            const metadataArray = await Promise.all(metadataPromises);
 
-          let valentinesHtml = metadataArray.map(metadata => createValentineSentCard(metadata)).join('');
-        //   receivedSection.innerHTML = `
-        //       <div class="batch-transaction">
-        //           <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-        //               target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
-        //       </div>
-    
-        //   `;
-          valentinesGrids.innerHTML = `
+            let valentinesHtml = metadataArray.map(metadata => createValentineSentCard(metadata)).join('');
+            //   receivedSection.innerHTML = `
+            //       <div class="batch-transaction">
+            //           <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+            //               target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+            //       </div>
+
+            //   `;
+            valentinesGrids.innerHTML = `
               ${valentinesHtml}
           `;
         }
@@ -245,11 +245,11 @@ async function sendValentine() {
 //         try {
 //             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 //             const account = accounts[0];
-            
+
 //             // Update connection state
 //             walletConnected = true;
 //             updateSendButton(); // Update send button state
-            
+
 //             // Update button text while maintaining responsive structure
 //             const button = document.getElementById('connectWallet');
 //             button.innerHTML = `
@@ -257,7 +257,7 @@ async function sendValentine() {
 //                 <span class="wallet-text-medium">${account.slice(0, 6)}...</span>
 //             `;
 //             button.style.backgroundColor = '#e0ffe0';
-            
+
 //         } catch (error) {
 //             console.error('Error connecting wallet:', error);
 //             alert('Error connecting wallet. Please try again.');
@@ -305,7 +305,7 @@ async function connectWallet() {
 
             // Check if we're on the correct network
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            
+
             if (chainId !== targetChainId) {
                 try {
                     // Try to switch to target network
@@ -334,7 +334,7 @@ async function connectWallet() {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             walletConnected = true;
             updateSendButton();
-            
+
             // Update header wallet button
             const button = document.getElementById('connectWallet');
             button.innerHTML = `
@@ -342,7 +342,7 @@ async function connectWallet() {
                 <span class="wallet-text-medium">${accounts[0].slice(0, 6)}...</span>
             `;
             button.style.backgroundColor = '#e0ffe0';
-            
+
             // Load valentines after successful connection
             loadValentines();
         } catch (error) {
@@ -376,7 +376,7 @@ function disconnectWallet() {
     walletConnected = false;
     updateSendButton();
     loadValentines(); // This will hide the section
-    
+
     // Reset wallet button
     const button = document.getElementById('connectWallet');
     button.innerHTML = `👛 <span class="wallet-text-long">Connect Wallet</span>`;
@@ -398,7 +398,7 @@ function updateValentineCardButton() {
 }
 
 // Update the initialization function to start timer immediately
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     // Start countdown immediately with default date
     updateCountdown();
     setInterval(updateCountdown, 1000);
@@ -406,22 +406,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         // Initialize contract date and other data
         await initializeContractDate();
-        
+
         // Update UI elements that depend on contract data
         await Promise.all([
             updatePrices(),
             loadValentines()
         ]);
-        
+
         // Update UI elements that depend on both
         updateValentineCardButton();
         updateInstructions();
-        
+
         initializeCarousel();
 
         // Test TikTok functionality
         console.log("Testing TikTok integration...");
-        
+
         // Test 1: Get TikTok Data
         console.log("Test 1: Getting TikTok user data");
         const userData = await getTikTokData("technicallyweb3");
@@ -476,38 +476,38 @@ function getCurrentUTCDate() {
 }
 
 function isValentinesDay(date) {
-    return date.getUTCMonth() === (valentineDate.month - 1) && 
-           date.getUTCDate() === valentineDate.day;
+    return date.getUTCMonth() === (valentineDate.month - 1) &&
+        date.getUTCDate() === valentineDate.day;
 }
 
 function updateCountdown() {
     const now = getCurrentUTCDate();
     const currentYear = now.getUTCFullYear();
     const isToday = isValentinesDay(now);
-    
+
     const countdownContainer = document.getElementById('countdown-container');
     const valentineCard = document.querySelector('.valentine-card');
     const valentinesBanner = document.getElementById('valentines-banner');
     const walletButton = document.getElementById('connectWallet');
     const daysElements = document.querySelectorAll('.days-section');
     let targetDate;
-    
+
     // Check if we need to update the countdown label
     const existingLabel = countdownContainer.querySelector('.countdown-label');
-    
+
     if (isToday) {
         // Show Valentine's banner, minting form, and wallet button
         valentinesBanner.style.display = 'block';
         valentineCard.style.display = 'block';
         walletButton.classList.add('visible');
-        
+
         // Hide days section on Valentine's Day
         daysElements.forEach(el => el.style.display = 'none');
-        
+
         // Count down to end of Valentine's Day
         targetDate = new Date(Date.UTC(currentYear, valentineDate.month - 1, valentineDate.day + 1)); // Next day at midnight
         countdownContainer.classList.add('minting-open');
-        
+
         // Only add the label if it doesn't exist
         if (!existingLabel) {
             const countdownLabel = document.createElement('div');
@@ -520,14 +520,14 @@ function updateCountdown() {
         valentinesBanner.style.display = 'none';
         valentineCard.style.display = 'none';
         walletButton.classList.remove('visible');
-        
+
         // Remove the label if it exists
         if (existingLabel) {
             existingLabel.remove();
         }
         // Show days section when counting down to Valentine's Day
         daysElements.forEach(el => el.style.display = 'flex');
-        
+
         // Count down to next Valentine's Day
         targetDate = new Date(Date.UTC(currentYear, valentineDate.month - 1, valentineDate.day));
         if (now > targetDate) {
@@ -535,15 +535,15 @@ function updateCountdown() {
         }
         countdownContainer.classList.remove('minting-open');
     }
-    
+
     const difference = targetDate - now;
-    
+
     // Update the countdown numbers
     const days = Math.floor(difference / (1000 * 60 * 60 * 24));
     const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-    
+
     document.getElementById('days').textContent = days.toString().padStart(2, '0');
     document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
     document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
@@ -554,7 +554,7 @@ function updateCountdown() {
 }
 
 // Add quantity change handler
-document.getElementById('quantity').addEventListener('change', function() {
+document.getElementById('quantity').addEventListener('change', function () {
     const quantity = parseInt(this.value);
     const customMessageToggle = document.getElementById('customMessage');
     const messageToggleContainer = document.querySelector('.message-toggle');
@@ -569,7 +569,7 @@ document.getElementById('quantity').addEventListener('change', function() {
 });
 
 // Update existing custom message handler to check quantity
-document.getElementById('customMessage').addEventListener('change', function() {
+document.getElementById('customMessage').addEventListener('change', function () {
     const quantity = parseInt(document.getElementById('quantity').value);
     if (quantity > 1) {
         this.checked = false;
@@ -591,9 +591,9 @@ document.getElementById('customMessage').addEventListener('change', function() {
 function updateInstructions() {
     const now = getCurrentUTCDate();
     const isToday = isValentinesDay(now);
-    
+
     const instructionsContent = document.getElementById('instructions-content');
-    
+
     if (isToday) {
         instructionsContent.innerHTML = `
             <ul>
@@ -623,42 +623,42 @@ function updateInstructions() {
 updateInstructions();
 
 // Add modal functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('valentineModal');
     const modalImage = modal.querySelector('.modal-image');
     const modalSender = modal.querySelector('.sender');
     const modalYear = modal.querySelector('.year');
     const modalMessage = modal.querySelector('.message');
-    
+
     // Add click handlers to all valentine cards
     document.querySelectorAll('.received-valentine').forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function () {
             const thumbnail = this.querySelector('.nft-image');
             const sender = this.querySelector('.sender').textContent;
             const year = this.querySelector('.year').textContent;
             const message = this.querySelector('.message').textContent;
-            
+
             modalImage.src = thumbnail.src;
             modalSender.textContent = sender;
             modalYear.textContent = year;
             modalMessage.textContent = message;
-            
+
             modal.style.display = 'flex';
         });
     });
-    
+
     // Close modal when clicking the close button
     modal.querySelector('.close-modal').addEventListener('click', () => {
         modal.style.display = 'none';
     });
-    
+
     // Close modal when clicking outside
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.style.display = 'none';
         }
     });
-    
+
     // Close modal with escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.style.display === 'flex') {
@@ -708,27 +708,27 @@ function createValentineCard(valentine) {
 async function loadValentines(append = false) {
     const receivedSection = document.querySelector('.received-valentines');
     const valentinesGrid = document.querySelector('.valentines-grid');
-    
+
     if (!walletConnected || !window.ethereum) {
         receivedSection.style.display = 'none';
         return;
     }
-    
+
     if (!append) {
         receivedSection.style.display = 'block';
         valentinesGrid.innerHTML = '<div class="loading"><span class="heart-loader">💝</span> Loading your valentines...</div>';
         currentIndex = 0;
     }
-    
+
     if (isLoading) return;
     isLoading = true;
-    
+
     try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         const address = accounts[0];
-        
+
         const valentines = await fetchValentines(address, currentIndex, currentIndex + BATCH_SIZE);
-        
+
         if (valentines.length === 0 && currentIndex === 0) {
             valentinesGrid.innerHTML = `
                 <div class="no-valentines">
@@ -740,7 +740,7 @@ async function loadValentines(append = false) {
             `;
             return;
         }
-        
+
         if (!append) {
             valentinesGrid.innerHTML = '';
         } else {
@@ -748,25 +748,25 @@ async function loadValentines(append = false) {
             const loadingEl = valentinesGrid.querySelector('.loading-more');
             if (loadingEl) loadingEl.remove();
         }
-        
+
         valentines.forEach(valentine => {
             valentinesGrid.innerHTML += createValentineCard(valentine);
         });
-        
+
         // Add loading indicator if there might be more items
         if (valentines.length === BATCH_SIZE) {
             valentinesGrid.innerHTML += '<div class="loading-more"><span class="heart-loader">💝</span> Loading more valentines...</div>';
             currentIndex += BATCH_SIZE;
-            
+
             // Observe the new loading indicator
             const newLoadingMore = valentinesGrid.querySelector('.loading-more');
             if (newLoadingMore && observer) {
                 observer.observe(newLoadingMore);
             }
         }
-        
+
         initializeModalHandlers();
-        
+
         // Initialize intersection observer only once
         if (!append) {
             initializeInfiniteScroll();
@@ -788,23 +788,23 @@ function initializeModalHandlers() {
     const modalSender = modal.querySelector('.sender');
     const modalYear = modal.querySelector('.year');
     const modalMessage = modal.querySelector('.message');
-    
+
     // document.querySelectorAll('.received-valentine').forEach(card => {
     //     card.addEventListener('click', function(e) {
     //         if (e.target.classList.contains('address-link')) {
     //             return;
     //         }
-            
+
     //         const thumbnail = this.querySelector('.nft-image');
     //         const sender = this.querySelector('.address-link');
     //         const year = this.querySelector('.year').textContent;
     //         const message = this.querySelector('.message').textContent;
-            
+
     //         modalImage.src = thumbnail.src;
     //         modalSender.innerHTML = `From: ${sender.outerHTML}`;
     //         modalYear.textContent = year;
     //         modalMessage.textContent = message;
-            
+
     //         modal.style.display = 'flex';
     //     });
     // });
@@ -817,12 +817,12 @@ function initializeInfiniteScroll() {
         rootMargin: '100px',
         threshold: 0.1
     };
-    
+
     // Disconnect existing observer if it exists
     if (observer) {
         observer.disconnect();
     }
-    
+
     observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && !isLoading) {
@@ -830,7 +830,7 @@ function initializeInfiniteScroll() {
             }
         });
     }, options);
-    
+
     // Observe the loading more element
     const loadingMore = document.querySelector('.loading-more');
     if (loadingMore) {
@@ -844,23 +844,23 @@ async function updatePrices() {
     try {
         const prices = await getMintPrices();
         console.log(prices);
-        
+
         // Update the message toggle label with actual price
         // const messageLabel = document.querySelector('label[for="customMessage"]');
         // messageLabel.textContent = `Add Custom Message (Additional ${prices.message} POL)`;
-        
+
         // Update price values using IDs
         const mintPriceElement = document.getElementById('mint-price');
         const messagePriceElement = document.getElementById('message-price');
-        
+
         if (mintPriceElement) {
             mintPriceElement.textContent = `${prices.card} POL`;
         }
-        
+
         if (messagePriceElement) {
             messagePriceElement.textContent = `+${prices.message} POL`;
         }
-        
+
         // // Update the main button text if wallet is not connected
         // if (!walletConnected) {
         //     const sendButton = document.getElementById('send-connect-btn');
@@ -875,7 +875,7 @@ async function updatePrices() {
 function initializeCarousel() {
     const track = document.querySelector('.profile-track');
     const carousel = document.querySelector('.profile-carousel');
-    
+
     // Create profile cards
     profiles.forEach(profile => {
         const card = document.createElement('div');
@@ -928,13 +928,13 @@ function updateSendButtonText() {
         sendButton.textContent = 'Connect Wallet to Send';
     } else {
         const totalCards = recipients.reduce((sum, recipient) => sum + recipient.quantity, 0);
-        const totalCustomMessages = recipients.reduce((sum, recipient) => 
+        const totalCustomMessages = recipients.reduce((sum, recipient) =>
             sum + (recipient.messages?.filter(msg => msg?.trim().length > 0).length || 0), 0);
-        
+
         const basePrice = totalCards;
         const messagePrice = totalCustomMessages * 5;
         const totalPrice = basePrice + messagePrice;
-        
+
         sendButton.textContent = `Send${totalCards > 1 ? " " + totalCards : ""} Valentine${totalCards !== 1 ? 's' : ''} (${totalPrice} POL)`;
     }
 }
@@ -957,7 +957,12 @@ function createRecipientCard() {
                 <button class="quantity-button" id="incrementButton">+</button>
             </div>
         </div>
-        <button class="view-more-button">View messages</button>
+        <div class="customize-tab">
+    <button id="viewMoreButton" class="customize-button">
+        View messages
+        <span class="arrow-down">▼</span>
+    </button>
+</div>
         <div class="additional-inputs-container" style="display: none; margin-top: 5px;"></div>
         <button class="remove-recipient">Remove Recipient</button>
         <div class="message-toggle">
@@ -972,8 +977,8 @@ function createRecipientCard() {
     addRecipientButton.parentNode.insertBefore(recipientCard, addRecipientButton); // Insert before the button
 
     // Add event listener for the "View Messages" button
-    const viewMoreButton = recipientCard.querySelector('.view-more-button');
-    viewMoreButton.addEventListener('click', function() {
+    const viewMoreButton = recipientCard.querySelector('.customize-button');
+    viewMoreButton.addEventListener('click', function () {
         const additionalInputsContainer = recipientCard.querySelector('.additional-inputs-container');
         if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
             additionalInputsContainer.style.display = 'block'; // Show the container
@@ -989,21 +994,21 @@ function createRecipientCard() {
     const incrementButton = recipientCard.querySelector('#incrementButton');
     const quantityInput = recipientCard.querySelector('.recipient-quantity-input');
 
-    decrementButton.addEventListener('click', function() {
+    decrementButton.addEventListener('click', function () {
         let currentValue = parseInt(quantityInput.value);
         if (currentValue > 1) {
             quantityInput.value = currentValue - 1;
         }
     });
 
-    incrementButton.addEventListener('click', function() {
+    incrementButton.addEventListener('click', function () {
         let currentValue = parseInt(quantityInput.value);
         if (currentValue < 10) {
             quantityInput.value = currentValue + 1;
         }
     });
 
-    
+
 }
 
 // Function to initialize the first recipient card
@@ -1011,7 +1016,7 @@ function initializeFirstRecipientCard() {
     const firstRecipientCard = document.querySelector('.recipient-card');
     if (firstRecipientCard) {
         const viewMoreButton = firstRecipientCard.querySelector('#viewMoreButton');
-        viewMoreButton.addEventListener('click', function() {
+        viewMoreButton.addEventListener('click', function () {
             const additionalInputsContainer = firstRecipientCard.querySelector('#additionalInputsContainer');
             if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
                 additionalInputsContainer.style.display = 'block'; // Show the container
@@ -1025,7 +1030,7 @@ function initializeFirstRecipientCard() {
 }
 
 // Call this function after the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeFirstRecipientCard();
     document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
 });
