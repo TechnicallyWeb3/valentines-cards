@@ -378,7 +378,7 @@ function addRecipient(profileIndex = null) {
 window.addRecipient = addRecipient;
 
 function buildValentineArray() {
-    valentines = [];
+    let valentines = [];
     for (let i = 0; i < recipients.length; i++) {
         if (recipients[i].address !== "") {
             for (let j = 0; j < recipients[i].quantity; j++) {
