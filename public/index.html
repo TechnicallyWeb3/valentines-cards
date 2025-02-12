@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Valentine's Day Message</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="hearts">
         <div class="heart">❤️</div>
@@ -41,7 +44,8 @@
     </div>
 
     <div class="countdown-container minting-open" id="countdown-container">
-        <div class="countdown-label">Minting closes in:</div><div class="countdown">
+        <div class="countdown-label">Minting closes in:</div>
+        <div class="countdown">
             <div class="countdown-item days-section" style="display: none;">
                 <span id="days">00</span>
                 <span class="label">Days</span>
@@ -68,7 +72,8 @@
         <h2>💝 Valentine's NFT Instructions 💝</h2>
         <div id="instructions-content">
             <ul>
-                <li><span class="highlight">Minting is OPEN!</span> Valentine's NFTs are available until the end of the countdown!</li>
+                <li><span class="highlight">Minting is OPEN!</span> Valentine's NFTs are available until the end of the
+                    countdown!</li>
                 <li>Connect your wallet using the button in the top right</li>
                 <li>Enter your valentine's Polygon wallet address</li>
                 <li>Choose between a random Valentine's NFT or add your custom message</li>
@@ -113,13 +118,20 @@
                         <span class="multiply">×</span>
                         <input type="number" id="quantity" value="1" min="1" max="10" class="quantity-input">
                     </div>
+
                 </div>
-                <div class="message-toggle">
+                <button id="viewMoreButton">View messages</button>
+                <div id="additionalInputsContainer" style="display: none; margin-top: 5px;"></div>
+                <div class="message-toggle display: none;">
                     <input type="checkbox" id="customMessage" class="custom-checkbox">
                     <label for="customMessage">Add Custom Message</label>
                 </div>
-                <textarea id="valentineMessage" placeholder="Write your sweet message here..." style="display: none;"></textarea>
+                <textarea id="valentineMessage" placeholder="Write your sweet message here..."
+                    style="display: none;"></textarea>
             </div>
+
+            <button style="margin-bottom: 10px;" id="addRecipientButton">Add New Recipient</button>
+
             <button>Connect Wallet to Send</button>
         </div>
         <div id="sentMessage" class="sent-message"></div>
@@ -143,14 +155,12 @@
         </div>
     </div>
 
-    <script type="module" 
-            src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js" 
-            crossorigin="anonymous"></script>
-    <script type="module" 
-            src="contractConfig.js"></script>
-    <script type="module" 
-            src="tiktokUtils.js"></script>
-    <script type="module" 
-            src="script.js"></script>
+    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js"
+        crossorigin="anonymous"></script>
+    <script type="module" src="contractConfig.js"></script>
+    <script type="module" src="tiktokUtils.js"></script>
+    <script type="module" src="script.js"></script>
 
- </body></html>
+</body>
+
+</html>

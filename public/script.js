@@ -2,7 +2,7 @@ import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchM
 import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
-const DEV_MODE = false;  // Set this to false for production
+const DEV_MODE = true;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;
@@ -282,7 +282,7 @@ document.getElementById('connectWallet').addEventListener('click', async () => {
 
 // Add new function to update send button
 async function updateSendButton() {
-    const sendButton = document.querySelector('.valentine-card button');
+    const sendButton = document.querySelector('.valentine-card button:nth-of-type(2)');
     if (!walletConnected) {
         // const prices = await getMintPrices();
         // const qty = parseInt(document.getElementById('quantity').value);
@@ -339,7 +339,7 @@ function updateValentineCardButton() {
     if (valentineCard) {
         const buttonHtml = `<button>Connect Wallet to Send</button>`;
         // Find and replace the existing button
-        const existingButton = valentineCard.querySelector('button');
+        const existingButton = valentineCard.querySelector('button:nth-of-type(2)');
         if (existingButton) {
             existingButton.outerHTML = buttonHtml;
         }
@@ -873,3 +873,55 @@ function updateSendButtonText() {
         sendButton.textContent = `Send${totalCards > 1 ? " " + totalCards : ""} Valentine${totalCards !== 1 ? 's' : ''} (${totalPrice} POL)`;
     }
 }
+
+// Select the send button
+const sendButton = document.querySelector('.valentine-card .send-valentines-btn');
+
+// Function to generate additional input fields based on quantity
+function generateAdditionalInputs() {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const container = document.getElementById('additionalInputsContainer');
+    container.innerHTML = ''; // Clear previous inputs
+
+    for (let i = 0; i < quantity; i++) {
+        const inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.placeholder = `Additional Input ${i + 1}`;
+        inputField.className = 'additional-input';
+        container.appendChild(inputField);
+    }
+}
+
+// Event listener for the View More button
+document.getElementById('viewMoreButton').addEventListener('click', function() {
+    const container = document.getElementById('additionalInputsContainer');
+    if (container.style.display === 'none') {
+        generateAdditionalInputs(); // Generate inputs when showing
+        container.style.display = 'block'; // Show the container
+    } else {
+        container.style.display = 'none'; // Hide the container
+    }
+});
+
+function createRecipientCard() {
+    const recipientCard = document.createElement('div');
+    recipientCard.className = 'recipient-card';
+    recipientCard.innerHTML = `
+        <div class="recipient-header">
+            <div class="address-input">
+                <input type="text" placeholder="Recipient's Polygon Address">
+            </div>
+            <div class="quantity-wrapper">
+                <span class="multiply">×</span>
+                <input type="number" value="1" min="1" max="10" class="quantity-input">
+            </div>
+            <button class="remove-recipient" onclick="removeRecipient(this)">×</button>
+        </div>
+        <div class="recipient-details" style="display: none;">
+            <!-- Additional details can go here -->
+        </div>
+    `;
+    document.getElementById('create-valentine').appendChild(recipientCard);
+}
+
+document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
