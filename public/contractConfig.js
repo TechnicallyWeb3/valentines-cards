@@ -3,11 +3,12 @@ import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethe
 window.contractConfig = {};
 
 // Constants
-export const VALENTINE_ADDRESS = '0xE03BFfC19945912c5b6E69492125030FAD6bf8B4';
+export const VALENTINE_ADDRESS = '0xd6ff9859c50Eab41784749c18865E16Ca9d356FF';
 // export const NETWORK_ID = '137'; 
 // export const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
 export const NETWORK_ID = '11155111';
 export const RPC_URL = 'https://ethereum-sepolia.publicnode.com';
+export const NETWORK_SYMBOL = 'S.ETH';
 
 
 const MAX_FETCH_SIZE = 12;

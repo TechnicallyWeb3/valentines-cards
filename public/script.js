@@ -1,4 +1,4 @@
-import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines } from './contractConfig.js';
+import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines, NETWORK_ID, RPC_URL, NETWORK_SYMBOL } from './contractConfig.js';
 import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
@@ -298,6 +298,47 @@ async function updateSendButton() {
 async function connectWallet() {
     if (typeof window.ethereum !== 'undefined') {
         try {
+            const targetChainId = `0x${Number(NETWORK_ID).toString(16)}`; // Convert to hex
+            const networkDetails = {
+                chainId: targetChainId,
+                chainName: `${NETWORK_SYMBOL} Network`,
+                nativeCurrency: {
+                    name: NETWORK_SYMBOL.split('.')[1] || NETWORK_SYMBOL, // Handle cases like "S.ETH" -> "ETH"
+                    symbol: NETWORK_SYMBOL.split('.')[1] || NETWORK_SYMBOL,
+                    decimals: 18
+                },
+                rpcUrls: [RPC_URL],
+                blockExplorerUrls: [RPC_URL.includes('sepolia') ? 'https://sepolia.etherscan.io' : 'https://polygonscan.com']
+            };
+
+            // Check if we're on the correct network
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            
+            if (chainId !== targetChainId) {
+                try {
+                    // Try to switch to target network
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: targetChainId }],
+                    });
+                } catch (switchError) {
+                    // If the network isn't added to MetaMask, add it
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [networkDetails],
+                            });
+                        } catch (addError) {
+                            throw new Error(`Could not add ${networkDetails.chainName}`);
+                        }
+                    } else {
+                        throw new Error(`Could not switch to ${networkDetails.chainName}`);
+                    }
+                }
+            }
+
+            // Continue with existing wallet connection code...
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             walletConnected = true;
             updateSendButton();
@@ -314,11 +355,28 @@ async function connectWallet() {
             loadValentines();
         } catch (error) {
             console.error('Error connecting wallet:', error);
-            alert('Error connecting wallet. Please try again.');
+            alert('Error connecting wallet: ' + error.message);
         }
     } else {
         alert('Please install MetaMask or another Web3 wallet to connect!');
     }
+}
+
+// Update the chainChanged listener as well
+if (window.ethereum) {
+    window.ethereum.on('chainChanged', (chainId) => {
+        const targetChainId = `0x${Number(NETWORK_ID).toString(16)}`;
+        if (chainId !== targetChainId) {
+            walletConnected = false;
+            updateSendButton();
+            const button = document.getElementById('connectWallet');
+            button.innerHTML = `👛 <span class="wallet-text-long">Wrong Network</span>`;
+            button.style.backgroundColor = '#ffe0e0';
+        } else {
+            // Reconnect if we switch back to the correct network
+            connectWallet();
+        }
+    });
 }
 
 // Add disconnect handler (for testing)

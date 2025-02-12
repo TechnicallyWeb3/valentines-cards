@@ -13,7 +13,7 @@ async function uploadSelectedTraits(traitIndices: number[]) {
     const valentine = await hre.ethers.getContractAt('ValentineNFT', VALENTINE_NFT_ADDRESS, signer);
 
     // Process each category
-    for (let categoryId = 1; categoryId < traitIndices.length; categoryId++) {
+    for (let categoryId = 0; categoryId < traitIndices.length; categoryId++) {
         const selectedIndex = traitIndices[categoryId];
         const category = Object.values(traits)[categoryId];
         if (!category || selectedIndex >= category.traits.length) {
