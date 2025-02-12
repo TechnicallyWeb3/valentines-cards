@@ -995,6 +995,8 @@ function createRecipientCard() {
             quantityInput.value = currentValue + 1;
         }
     });
+
+    
 }
 
 // Function to initialize the first recipient card
