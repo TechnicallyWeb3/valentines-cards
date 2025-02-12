@@ -286,6 +286,8 @@ export async function batchMintValentines(valentines) {
     }
 
     try {
+
+        console.log(valentines)
         // Get contract with MetaMask provider
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
@@ -322,6 +324,8 @@ export async function batchMintValentines(valentines) {
             from: ethers.ZeroAddress,
             message: v.message || ""
         }));
+
+        console.log(formattedValentines)
 
         const tx = await contract.bulkMint(formattedValentines, { value: totalPrice });
         console.log("Transaction sent:", tx.hash);

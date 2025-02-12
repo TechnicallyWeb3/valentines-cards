@@ -160,6 +160,13 @@ async function sendValentine() {
         ? document.getElementById('valentineMessage').value
         : ""; // Default message
 
+    // Example usage
+    const recipientData = collectRecipientData();
+    if (recipientData) {
+        console.log(recipientData); // Log the collected recipient data
+        // Proceed with minting or further processing
+    }
+
     // Input validation
     if (recipient.trim() === '') {
         alert('Please enter recipient Polygon address!');
@@ -182,8 +189,6 @@ async function sendValentine() {
     sentMessage.innerHTML = '<div class="valentine-sending">💌 Sending your valentine(s)...</div>';
     sentMessage.style.display = 'block';
 
-
-
     try {
         console.log("QUANTITY: ", quantity);
         if (!(quantity > 1)) {
@@ -196,9 +201,9 @@ async function sendValentine() {
             valentinesGrids.innerHTML = createValentineSentCard(metadata);
         } else {
             // Batch mint
-            const valentines = Array(quantity).fill().map(() => ({
-                to: recipient,
-                message: message
+            const valentines = recipientData.map(data => ({
+                to: data.address,
+                message: data.message // Assuming quantity is the same for all messages for that recipient
             }));
 
             const result = await batchMintValentines(valentines);
@@ -1048,4 +1053,73 @@ function generateAdditionalInputs(container, quantity) {
     }
 }
 
+// Function to collect messages from additional input fields
+function collectMessages() {
+    const additionalInputsContainer = document.getElementById('additionalInputsContainer');
+    const inputFields = additionalInputsContainer.querySelectorAll('.additional-input');
+    const messages = [];
 
+    inputFields.forEach((inputField) => {
+        const message = inputField.value.trim(); // Get the trimmed value of the input
+        if (message) {
+            messages.push(message); // Add non-empty messages to the array
+        }
+    });
+
+    return messages; // Return the array of messages
+}
+
+// Example usage in your existing code
+const quantity = parseInt(document.getElementById('quantity').value);
+const messages = collectMessages(); // Collect messages from additional inputs
+
+// Ensure that the number of messages matches the quantity
+if (messages.length < quantity) {
+    console.error(`Expected ${quantity} messages, but got ${messages.length}.`);
+} else {
+    // Proceed with using the messages in the order they were collected
+    const finalMessages = messages.slice(0, quantity); // Get only the required number of messages
+    // Now you can use finalMessages for further processing
+}
+
+
+// Function to collect messages, recipient addresses, and token quantities
+function collectRecipientData() {
+    const messages = collectMessages(); // Collect messages from additional inputs
+    const recipientAddress = document.getElementById('recipientAddress').value; // Get recipient address
+    const tokenQuantity = parseInt(document.getElementById('quantity').value); // Get token quantity
+
+    // Ensure that the number of messages matches the quantity
+    if (messages.length < tokenQuantity) {
+        console.error(`Expected ${tokenQuantity} messages, but got ${messages.length}.`);
+        return null; // Return null if there's a mismatch
+    } else {
+        // Create an array of recipient data
+        const recipientData = messages.slice(0, tokenQuantity).map((message) => ({
+            address: recipientAddress,
+            message: message,
+            quantity: 1
+        }));
+
+        return recipientData; // Return the array of recipient data
+    }
+}
+
+const sendButtons = document.querySelector('.valentine-card .send-valentines-btn');
+if (sendButtons) {
+    sendButtons.addEventListener('click', function () {
+        const messages = collectMessages(); // Collect messages from additional inputs
+        const quantity = parseInt(document.getElementById('quantity').value());
+
+    // Ensure that the number of messages matches the quantity
+    if (messages.length < quantity) {
+        console.error(`Expected ${quantity} messages, but got ${messages.length}.`);
+    } else {
+        // Proceed with using the messages in the order they were collected
+        const finalMessages = messages.slice(0, quantity); // Get only the required number of messages
+        console.log(finalMessages);
+        // Further processing...
+    }
+});
+
+}
