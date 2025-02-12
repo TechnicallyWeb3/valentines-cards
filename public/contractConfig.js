@@ -101,7 +101,7 @@ export async function getTokenByIndex(address, index) {
 }
 
 // Get valentine metadata
-async function getValentineMetadata(tokenId) {
+export async function getValentineMetadata(tokenId) {
     const contract = await initializeContract();
     if (!contract) return null;
 

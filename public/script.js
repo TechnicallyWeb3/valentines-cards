@@ -2,7 +2,7 @@ import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchM
 import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
-const DEV_MODE = true;  // Set this to false for production
+const DEV_MODE = false;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;
@@ -297,28 +297,24 @@ async function sendValentine() {
         return;
     }
 
+    const receivedSection = document.querySelector('.sent-valentines');
     const sentMessage = document.getElementById('sentMessage');
+    const valentinesGrids = document.querySelector('.valentines-grids');
     sentMessage.innerHTML = '<div class="valentine-sending">💌 Sending your valentine(s)...</div>';
     sentMessage.style.display = 'block';
+ 
+    
 
     try {
         console.log("QUANTITY: ", quantity);
         if (!(quantity > 1)) {
             // Single mint
             const result = await mintValentine(recipient, message);
+               receivedSection.style.display = 'block'
+               sentMessage.style.display = 'none';
 
-            sentMessage.innerHTML = `
-                <div class="valentine-sent">
-                    <h3>💌 Valentine Sent!</h3>
-                    <p>To: ${recipient}</p>
-                    ${message ? `<p>Message: ${message}</p>` : `<button onclick="addMessage(${result.tokenId})" class="add-message-btn">Add Message</button>`}
-                    <p>Token ID: ${result.tokenId}</p>
-                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
-                    ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
-                    <p>With love ❤️</p>
-                </div>
-            `;
+            const metadata = await getValentineMetadata(result.tokenId);
+            valentinesGrids.innerHTML = createValentineSentCard(metadata);
         } else {
             // Batch mint
             const valentines = Array(quantity).fill().map(() => ({
@@ -327,28 +323,24 @@ async function sendValentine() {
             }));
 
             const result = await batchMintValentines(valentines);
+            sentMessage.style.display = 'none';
+               receivedSection.style.display = 'block'
 
-            let valentinesHtml = '';
-            result.mintedTokens.forEach(token => {
-                valentinesHtml += `
-                    <div class="valentine-sent">
-                        <h3>💌 Valentine Sent!</h3>
-                        <p>To: ${recipient}</p>
-                        ${message ? `<p>Message: ${message}</p>` : ''}
-                        <p>Token ID: ${token.tokenId}</p>
-                        ${result.isMock ? '<p class="mock-notice">(Test Mode)</p>' : ''}
-                        <p>With love ❤️</p>
-                    </div>
-                `;
-            });
+          // Fetch metadata for all minted tokens
+          const metadataPromises = result.mintedTokens.map(token => getValentineMetadata(token.tokenId));
+          const metadataArray = await Promise.all(metadataPromises);
 
-            sentMessage.innerHTML = `
-                <div class="batch-transaction">
-                    <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
-                        target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
-                </div>
-                ${valentinesHtml}
-            `;
+          let valentinesHtml = metadataArray.map(metadata => createValentineSentCard(metadata)).join('');
+        //   receivedSection.innerHTML = `
+        //       <div class="batch-transaction">
+        //           <p>Transaction: <a href="https://polygonscan.com/tx/${result.transaction}" 
+        //               target="_blank">${result.transaction.slice(0, 6)}...${result.transaction.slice(-4)}</a></p>
+        //       </div>
+    
+        //   `;
+          valentinesGrids.innerHTML = `
+              ${valentinesHtml}
+          `;
         }
     } catch (error) {
         console.error('Error sending valentine:', error);
@@ -634,6 +626,21 @@ function formatAddress(address) {
 }
 
 // Function to create valentine card HTML
+function createValentineSentCard(valentine) {
+    return `
+        <div class="received-valentine">
+            <div class="valentine-thumbnail">
+                <img src="${valentine.image}" alt="Valentine NFT" class="nft-image">
+            </div>
+            <div class="valentine-info">
+                <p class="year">${valentine.year}</p>
+                <p class="sender">From: <a href="https://polygonscan.com/address/${valentine.sender}" 
+                    target="_blank" class="address-link">${formatAddress(valentine.sender)}</a></p>
+                ${valentine.message ? `<br><p class="message">"${valentine.message}"</p>` : `<button onclick="addMessage(${valentine.tokenId})" class="add-message-btn">Add Message</button>`}
+            </div>
+        </div>
+    `;
+}
 function createValentineCard(valentine) {
     return `
         <div class="received-valentine">
