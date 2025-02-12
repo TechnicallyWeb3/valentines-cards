@@ -1,5 +1,5 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
-import { RPC_URL, loadContractABI } from './contractConfig.js';
+import { NETWORK_DETAILS, loadContractABI } from './contractConfig.js';
 
 export const TIKTOKEN_ADDRESS = "0x359c3AD611e377e050621Fb3de1C2f4411684E92";
 
@@ -48,7 +48,7 @@ export async function getTikTokData(handle) {
 // Get blockchain address for a TikTok userId
 export async function getTikTokAddress(userId) {
     try {
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const provider = new ethers.JsonRpcProvider(NETWORK_DETAILS.rpcUrls[0]);
         const abi = await loadContractABI();
         const contract = new ethers.Contract(
             TIKTOKEN_ADDRESS,

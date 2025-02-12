@@ -1,4 +1,4 @@
-import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines, NETWORK_ID, RPC_URL, NETWORK_SYMBOL } from './contractConfig.js';
+import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines, NETWORK_DETAILS } from './contractConfig.js';
 import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
@@ -49,6 +49,12 @@ const profiles = [
 // Add this to your globals
 let recipients = [];
 
+// Call this function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFirstRecipientCard();
+    document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+});
+
 // Add this function to create a recipient object
 function createRecipient(address = '', quantity = 1, message = '') {
     return {
@@ -60,14 +66,35 @@ function createRecipient(address = '', quantity = 1, message = '') {
 }
 
 // Function to render all recipients
+// TODO: Change the format to be more flexible
 function renderRecipients() {
     const container = document.querySelector('.recipients-container');
     
     if (recipients.length === 0) {
-        // If no recipients, show a helpful message
+        // Add a single empty recipient
+        recipients.push(createRecipient());
         container.innerHTML = `
-            <div class="no-recipients">
-                Click "Add Recipient 💝" or choose someone from above to get started!
+            <div class="recipient-card">
+                <div class="recipient-header">
+                    <div class="address-input" id="recipient-address-0">
+                        <input type="text" 
+                            class="recipient-address" 
+                            value="" 
+                            placeholder="Recipient's Polygon Address"
+                            onchange="updateRecipient(0, 'address', this.value)">
+                    </div>
+                    <div class="quantity-wrapper" id="quantity-wrapper-0">
+                        <span class="multiply">×</span>
+                        <input type="number" 
+                            class="quantity-input" 
+                            value="1" 
+                            min="1" 
+                            max="100"
+                            onchange="updateRecipient(0, 'quantity', this.value)">
+                    </div>
+                    <button class="toggle-details" onclick="toggleRecipientDetails(0)">▶</button>
+                    <button class="remove-recipient" onclick="removeRecipient(0)">×</button>
+                </div>
             </div>
         `;
         return;
@@ -121,8 +148,13 @@ function renderRecipients() {
 function updateRecipient(index, field, value) {
     recipients[index][field] = value;
     if (field === 'quantity') {
-        recipients[index].messages = recipients[index].messages || [];
-        recipients[index].messages.length = parseInt(value);
+        if (value > 1) {
+            recipients[index].messages = recipients[index].messages || [];
+            recipients[index].messages.length = parseInt(value);
+        } else {
+            removeRecipient(index);
+            return;
+        }
     }
     renderRecipients();
 }
@@ -248,33 +280,6 @@ async function sendValentine() {
     }
 }
 
-// function connectWallet() {
-//     if (typeof window.ethereum !== 'undefined') {
-//         try {
-//             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-//             const account = accounts[0];
-            
-//             // Update connection state
-//             walletConnected = true;
-//             updateSendButton(); // Update send button state
-            
-//             // Update button text while maintaining responsive structure
-//             const button = document.getElementById('connectWallet');
-//             button.innerHTML = `
-//                 👛 <span class="wallet-text-long">${account.slice(0, 6)}...${account.slice(-4)}</span>
-//                 <span class="wallet-text-medium">${account.slice(0, 6)}...</span>
-//             `;
-//             button.style.backgroundColor = '#e0ffe0';
-            
-//         } catch (error) {
-//             console.error('Error connecting wallet:', error);
-//             alert('Error connecting wallet. Please try again.');
-//         }
-//     } else {
-//         alert('Please install MetaMask or another Web3 wallet to connect!');
-//     }
-// }
-
 // Update the wallet connection handler
 document.getElementById('connectWallet').addEventListener('click', async () => {
     await connectWallet();
@@ -282,7 +287,7 @@ document.getElementById('connectWallet').addEventListener('click', async () => {
 
 // Add new function to update send button
 async function updateSendButton() {
-    const sendButton = document.querySelector('.valentine-card button:nth-of-type(2)');
+    const sendButton = document.getElementById('sendValentineButton');
     if (!walletConnected) {
         // const prices = await getMintPrices();
         // const qty = parseInt(document.getElementById('quantity').value);
@@ -298,18 +303,8 @@ async function updateSendButton() {
 async function connectWallet() {
     if (typeof window.ethereum !== 'undefined') {
         try {
-            const targetChainId = `0x${Number(NETWORK_ID).toString(16)}`; // Convert to hex
-            const networkDetails = {
-                chainId: targetChainId,
-                chainName: `${NETWORK_SYMBOL} Network`,
-                nativeCurrency: {
-                    name: NETWORK_SYMBOL.split('.')[1] || NETWORK_SYMBOL, // Handle cases like "S.ETH" -> "ETH"
-                    symbol: NETWORK_SYMBOL.split('.')[1] || NETWORK_SYMBOL,
-                    decimals: 18
-                },
-                rpcUrls: [RPC_URL],
-                blockExplorerUrls: [RPC_URL.includes('sepolia') ? 'https://sepolia.etherscan.io' : 'https://polygonscan.com']
-            };
+            const targetChainId = `0x${Number(NETWORK_DETAILS.chainId).toString(16)}`; // Convert to hex
+            const networkDetails = NETWORK_DETAILS;
 
             // Check if we're on the correct network
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
@@ -576,23 +571,21 @@ document.getElementById('quantity').addEventListener('change', function() {
     }
 });
 
-// Update existing custom message handler to check quantity
-document.getElementById('customMessage').addEventListener('change', function() {
-    const quantity = parseInt(document.getElementById('quantity').value);
-    if (quantity > 1) {
-        this.checked = false;
-        return;
-    }
-    if (this.checked) {
-        const messageArea = document.getElementById('valentineMessage');
-        messageArea.style.display = 'block';
-        const quantityWrapper = document.getElementById('quantity-wrapper');
-        quantityWrapper.style.display = 'none';
-    } else {
-        const messageArea = document.getElementById('valentineMessage');
-        messageArea.style.display = 'none';
-        const quantityWrapper = document.getElementById('quantity-wrapper');
-        quantityWrapper.style.display = 'flex';
+// Replace the existing custom message handler with this new one
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.customize-button')) {
+        const button = e.target.closest('.customize-button');
+        const content = button.closest('.recipient-card').querySelector('.customize-content');
+        
+        button.classList.toggle('active');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            // Optional: Smooth animation
+            content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+            content.style.display = 'none';
+            content.style.maxHeight = null;
+        }
     }
 });
 
@@ -952,11 +945,13 @@ function createRecipientCard() {
         <button class="view-more-button">View messages</button>
         <div class="additional-inputs-container" style="display: none; margin-top: 5px;"></div>
         <button class="remove-recipient" onclick="removeRecipient(this)">Remove Recipient</button>
-        <div class="message-toggle">
-            <input type="checkbox" class="custom-checkbox">
-            <label>Add Custom Message</label>
+        <div class="customize-tab">
+            <button class="customize-button">
+                Customize Valentines
+                <span class="arrow-down">▼</span>
+            </button>
         </div>
-        <textarea placeholder="Write your sweet message here..." style="display: none;"></textarea>
+        <div class="customize-content" style="display: none;"></div>
     `;
 
     // Insert the new recipient card before the "Add New Recipient" button
@@ -977,7 +972,7 @@ function createRecipientCard() {
     });
 }
 
-// Function to initialize the first recipient card
+// // Function to initialize the first recipient card
 function initializeFirstRecipientCard() {
     const firstRecipientCard = document.querySelector('.recipient-card');
     if (firstRecipientCard) {
@@ -994,12 +989,6 @@ function initializeFirstRecipientCard() {
         });
     }
 }
-
-// Call this function after the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeFirstRecipientCard();
-    document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
-});
 
 // Function to generate additional input fields based on quantity
 function generateAdditionalInputs(container, quantity) {

@@ -112,27 +112,24 @@
             <div class="recipient-card">
                 <div class="input-group">
                     <div class="address-input">
-                        <input type="text" id="recipientAddress" placeholder="Recipient's Polygon Address">
+                        <input type="text" id="addressRecipient0" placeholder="Recipient's Polygon Address">
                     </div>
                     <div class="quantity-wrapper" id="quantity-wrapper">
                         <span class="multiply">×</span>
-                        <input type="number" id="quantity" value="1" min="1" max="10" class="quantity-input">
+                        <input type="number" id="qtyRecipient0" value="1" min="1" max="100" class="quantity-input">
                     </div>
-
                 </div>
-                <button id="viewMoreButton">View messages</button>
-                <div id="additionalInputsContainer" style="display: none; margin-top: 5px;"></div>
-                <div class="message-toggle display: none;">
-                    <input type="checkbox" id="customMessage" class="custom-checkbox">
-                    <label for="customMessage">Add Custom Message</label>
+                <div class="customize-tab">
+                    <button class="customize-button">
+                        Customize Valentines
+                        <span class="arrow-down">▼</span>
+                    </button>
                 </div>
-                <textarea id="valentineMessage" placeholder="Write your sweet message here..."
-                    style="display: none;"></textarea>
+                <div class="customize-content" style="display: none;">
+                    <textarea id="Recipient0Message0" placeholder="Write your sweet message here..."></textarea>
+                </div>
             </div>
-
-            <button style="margin-bottom: 10px;" id="addRecipientButton">Add New Recipient</button>
-
-            <button>Connect Wallet to Send</button>
+            <button id="sendValentineButton">Connect Wallet to Send</button>
         </div>
         <div id="sentMessage" class="sent-message"></div>
         <div class="received-valentines" style="display: none;">

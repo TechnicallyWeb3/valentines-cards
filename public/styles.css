@@ -1038,3 +1038,70 @@ html {
 .recipient-card {
     animation: slideIn 0.3s ease;
 }
+
+/* Add new customize tab styles */
+.customize-tab {
+    text-align: center;
+    margin: 1rem 0;
+    position: relative;
+}
+
+.customize-tab::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 77, 121, 0.2);
+    z-index: 0;
+}
+
+.customize-button {
+    position: relative;
+    background: white;
+    color: #ff4d79;
+    border: 1px solid #ff4d79;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1;
+}
+
+.customize-button:hover {
+    background: #fff5f7;
+    transform: translateY(-1px);
+}
+
+.customize-button .arrow-down {
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.customize-button.active .arrow-down {
+    transform: rotate(180deg);
+}
+
+.customize-content {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* Update textarea styles */
+.customize-content textarea {
+    margin-top: 1rem;
+    border: 1px solid #ffb3c6;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.customize-content textarea:focus {
+    outline: none;
+    border-color: #ff4d79;
+    box-shadow: 0 0 0 2px rgba(255, 77, 121, 0.1);
+}
