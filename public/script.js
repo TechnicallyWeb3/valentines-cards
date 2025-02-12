@@ -306,13 +306,20 @@ function removeRecipient(index) {
     }
 }
 
-function addRecipient(profileData = null) {
+function addRecipient(profileIndex = null) {
     const index = recipients.length;
+    let profileName = "";
     
     // Add to data array
-    if (profileData) {
-        console.log("ADDING RECIPIENT", profileData);
-        recipients.push(createRecipient(profileData.address, 1, ''));
+    if (profileIndex) {
+        if (profileIndex > profiles.length - 1) {
+            profileIndex = null;
+            console.error("NON EXISTING PROFILE INDEX", profileIndex);
+            return;
+        }
+        console.log("ADDING RECIPIENT", profileIndex);
+        recipients.push(createRecipient(profiles[profileIndex].address, 1, ''));
+        profileName = `<span class="profile-name">${profiles[profileIndex].name}</span>`;
     } else {
         recipients.push(createRecipient());
     }
@@ -330,7 +337,8 @@ function addRecipient(profileData = null) {
                     id="addressRecipient${index}"
                     value="${recipients[index].address}" 
                     placeholder="Recipient's Polygon Address"
-                    onchange="updateRecipient(${index}, 'address', this.value)">
+                    onchange="updateRecipient(${index}, 'address', this.value)"
+                    ${profileIndex ? 'readonly' : ''}>
             </div>
             <div class="quantity-wrapper">
                 <span class="multiply">×</span>
@@ -343,6 +351,7 @@ function addRecipient(profileData = null) {
                     onchange="updateRecipient(${index}, 'quantity', this.value)">
             </div>
         </div>
+        ${profileName}
         <div class="customize-content" id="contentRecipient${index}" style="display: none;">
             ${Array(recipients[index].quantity).fill().map((_, i) => `
                 <label for="recipient${index}Message${i}">#${i + 1}</label>
@@ -364,6 +373,8 @@ function addRecipient(profileData = null) {
     
     container.appendChild(recipientCard);
 }
+
+window.addRecipient = addRecipient;
 
 // Update the send valentine function
 async function sendValentine() {
