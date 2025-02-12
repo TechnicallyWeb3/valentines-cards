@@ -153,46 +153,20 @@ function createRecipient(address = '', quantity = 1, message = '') {
 }
 
 // Function to render all recipients
-// TODO: Change the format to be more flexible
 function renderRecipients() {
-    const container = document.querySelector('.recipients-container');
+    const container = document.querySelector('.valentine-card');
     
     if (recipients.length === 0) {
         // Add a single empty recipient
         recipients.push(createRecipient());
-        container.innerHTML = `
-            <div class="recipient-card">
-                <div class="recipient-header">
-                    <div class="address-input" id="recipient-address-0">
-                        <input type="text" 
-                            class="recipient-address" 
-                            value="" 
-                            placeholder="Recipient's Polygon Address"
-                            onchange="updateRecipient(0, 'address', this.value)">
-                    </div>
-                    <div class="quantity-wrapper" id="quantity-wrapper-0">
-                        <span class="multiply">×</span>
-                        <input type="number" 
-                            class="quantity-input" 
-                            value="1" 
-                            min="1" 
-                            max="100"
-                            onchange="updateRecipient(0, 'quantity', this.value)">
-                    </div>
-                    <button class="toggle-details" onclick="toggleRecipientDetails(0)">▶</button>
-                    <button class="remove-recipient" onclick="removeRecipient(0)">×</button>
-                </div>
-            </div>
-        `;
-        return;
     }
     
-    container.innerHTML = recipients.map((recipient, index) => `
+    let recipientsHTML = recipients.map((recipient, index) => `
         <div class="recipient-card">
-            <div class="recipient-header">
+            <div class="input-group">
                 <div class="address-input">
                     <input type="text" 
-                        class="recipient-address" 
+                        id="addressRecipient${index}"
                         value="${recipient.address}" 
                         placeholder="Recipient's Polygon Address"
                         onchange="updateRecipient(${index}, 'address', this.value)">
@@ -200,34 +174,65 @@ function renderRecipients() {
                 <div class="quantity-wrapper">
                     <span class="multiply">×</span>
                     <input type="number" 
-                        class="quantity-input" 
+                        id="qtyRecipient${index}"
                         value="${recipient.quantity}" 
-                        min="0" 
+                        min="${index === 0 ? 1 : 0}" 
                         max="100"
+                        class="quantity-input"
                         onchange="updateRecipient(${index}, 'quantity', this.value)">
                 </div>
-                <button class="toggle-details" onclick="toggleRecipientDetails(${index})">
-                    ${recipient.expanded ? '▼' : '▶'}
-                </button>
-                <button class="remove-recipient" onclick="removeRecipient(${index})">×</button>
             </div>
-            ${recipient.expanded ? `
-                <div class="recipient-details">
-                    ${Array(recipient.quantity).fill().map((_, cardIndex) => `
-                        <div class="card-message">
-                            <label>Card ${cardIndex + 1} Message:</label>
-                            <textarea 
-                                placeholder="Write your sweet message here..."
-                                onchange="updateCardMessage(${index}, ${cardIndex}, this.value)"
-                            >${recipient.messages?.[cardIndex] || ''}</textarea>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
+            <div class="customize-content" id="contentRecipient${index}" style="display: none;">
+                ${Array(recipient.quantity).fill().map((_, i) => `
+                    <label for="recipient${index}Message${i}">#${i + 1}</label>
+                    <input class="custom-message-input" 
+                           type="text" 
+                           id="recipient${index}Message${i}" 
+                           value="${recipient.messages?.[i] || ''}"
+                           placeholder="Write your sweet message here..."
+                           onchange="updateCardMessage(${index}, ${i}, this.value)">
+                `).join('')}
+            </div>
+            <div class="customize-tab">
+                <button class="customize-button" id="customizeRecipient${index}">
+                    Customize Valentines
+                    <span class="arrow-down">▼</span>
+                </button>
+            </div>
         </div>
     `).join('');
 
-    // Update the main send button text
+    // Insert before button container
+    const buttonContainer = container.querySelector('.button-container');
+    const recipientsContainer = document.createElement('div');
+    recipientsContainer.className = 'recipients-container';
+    recipientsContainer.innerHTML = recipientsHTML;
+    
+    // Remove existing recipients container if it exists
+    const existingContainer = container.querySelector('.recipients-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    container.insertBefore(recipientsContainer, buttonContainer);
+
+    // Add event listeners for customize buttons
+    recipients.forEach((_, index) => {
+        document.getElementById(`customizeRecipient${index}`)?.addEventListener('click', function() {
+            const content = document.getElementById(`contentRecipient${index}`);
+            this.classList.toggle('active');
+            
+            if (content.style.display === 'none' || !content.style.display) {
+                content.style.display = 'block';
+                content.style.maxHeight = content.scrollHeight + 'px';
+            } else {
+                content.style.display = 'none';
+                content.style.maxHeight = null;
+            }
+        });
+    });
+
+    // Update the send button text
     updateSendButtonText();
 }
 
@@ -238,7 +243,7 @@ function updateRecipient(index, field, value) {
         if (value > 1) {
             recipients[index].messages = recipients[index].messages || [];
             recipients[index].messages.length = parseInt(value);
-        } else {
+        } else if (value <= 0 && index > 0) { // Only remove if it's not the first recipient
             removeRecipient(index);
             return;
         }
