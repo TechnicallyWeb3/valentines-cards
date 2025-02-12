@@ -877,32 +877,6 @@ function updateSendButtonText() {
 // Select the send button
 const sendButton = document.querySelector('.valentine-card .send-valentines-btn');
 
-// Function to generate additional input fields based on quantity
-function generateAdditionalInputs() {
-    const quantity = parseInt(document.getElementById('quantity').value);
-    const container = document.getElementById('additionalInputsContainer');
-    container.innerHTML = ''; // Clear previous inputs
-
-    for (let i = 0; i < quantity; i++) {
-        const inputField = document.createElement('input');
-        inputField.type = 'text';
-        inputField.placeholder = `Additional Input ${i + 1}`;
-        inputField.className = 'additional-input';
-        container.appendChild(inputField);
-    }
-}
-
-// Event listener for the View More button
-document.getElementById('viewMoreButton').addEventListener('click', function() {
-    const container = document.getElementById('additionalInputsContainer');
-    if (container.style.display === 'none') {
-        generateAdditionalInputs(); // Generate inputs when showing
-        container.style.display = 'block'; // Show the container
-    } else {
-        container.style.display = 'none'; // Hide the container
-    }
-});
-
 // Function to create a new recipient card
 function createRecipientCard() {
     const recipientCard = document.createElement('div');
@@ -917,8 +891,8 @@ function createRecipientCard() {
                 <input type="number" value="1" min="1" max="10" class="recipient-quantity-input">
             </div>
         </div>
-        <button id="viewMoreButton">View messages</button>
-                <div id="additionalInputsContainer" style="display: none; margin-top: 5px;"></div>
+        <button class="view-more-button">View messages</button>
+        <div class="additional-inputs-container" style="display: none; margin-top: 5px;"></div>
         <button class="remove-recipient" onclick="removeRecipient(this)">Remove Recipient</button>
         <div class="message-toggle">
             <input type="checkbox" class="custom-checkbox">
@@ -931,23 +905,55 @@ function createRecipientCard() {
     const addRecipientButton = document.getElementById('addRecipientButton');
     addRecipientButton.parentNode.insertBefore(recipientCard, addRecipientButton); // Insert before the button
 
-     // Add event listener for the "View Messages" button
-     const viewMoreButton = recipientCard.querySelector('.view-more-button');
-     viewMoreButton.addEventListener('click', function() {
-         const additionalInputsContainer = recipientCard.querySelector('.additional-inputs-container');
-         if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
-             additionalInputsContainer.style.display = 'block'; // Show the container
-             generateAdditionalInputs(recipientCard); // Call a function to generate inputs if needed
-         } else {
-             additionalInputsContainer.style.display = 'none'; // Hide the container
-         }
-     });
-    
+    // Add event listener for the "View Messages" button
+    const viewMoreButton = recipientCard.querySelector('.view-more-button');
+    viewMoreButton.addEventListener('click', function() {
+        const additionalInputsContainer = recipientCard.querySelector('.additional-inputs-container');
+        if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
+            additionalInputsContainer.style.display = 'block'; // Show the container
+            const quantity = parseInt(recipientCard.querySelector('.recipient-quantity-input').value);
+            generateAdditionalInputs(additionalInputsContainer, quantity); // Pass the container and quantity
+        } else {
+            additionalInputsContainer.style.display = 'none'; // Hide the container
+        }
+    });
 }
 
+// Function to initialize the first recipient card
+function initializeFirstRecipientCard() {
+    const firstRecipientCard = document.querySelector('.recipient-card');
+    if (firstRecipientCard) {
+        const viewMoreButton = firstRecipientCard.querySelector('#viewMoreButton');
+        viewMoreButton.addEventListener('click', function() {
+            const additionalInputsContainer = firstRecipientCard.querySelector('#additionalInputsContainer');
+            if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
+                additionalInputsContainer.style.display = 'block'; // Show the container
+                const quantity = parseInt(firstRecipientCard.querySelector('.quantity-input').value);
+                generateAdditionalInputs(additionalInputsContainer, quantity); // Pass the container and quantity
+            } else {
+                additionalInputsContainer.style.display = 'none'; // Hide the container
+            }
+        });
+    }
+}
 
+// Call this function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFirstRecipientCard();
+    document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+});
 
-// Add event listener for the "Add New Recipient" button
-document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+// Function to generate additional input fields based on quantity
+function generateAdditionalInputs(container, quantity) {
+    container.innerHTML = ''; // Clear previous inputs
+
+    for (let i = 0; i < quantity; i++) {
+        const inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.placeholder = `Additional Input ${i + 1}`;
+        inputField.className = 'additional-input';
+        container.appendChild(inputField);
+    }
+}
 
 
