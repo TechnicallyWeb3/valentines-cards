@@ -284,11 +284,12 @@ describe("ValentineNFT", function () {
 
         if (i === 2) {
           // Token #2 should not have a message attribute
-          expect(json.attributes.length).to.equal(4); // 3 traits + mint year
+          expect(json.attributes.length).to.equal(5); // 3 traits + mint year + sender
           expect(messageAttribute).to.be.undefined;
         } else {
           // Tokens #1 and #3 should have their respective messages
-          expect(json.attributes.length).to.equal(5); // 3 traits + mint year + message
+          console.log(json.attributes);
+          expect(json.attributes.length).to.equal(6); // 3 traits + mint year + sender + message
           expect(messageAttribute).to.exist;
           expect(messageAttribute.value).to.equal(`Message ${i}`);
         }
@@ -411,7 +412,7 @@ describe("ValentineNFT", function () {
 
     //   console.log(json.attributes);
     //   console.log("Attributes length: ", json.attributes.length);
-      expect(json.attributes.length).to.equal(4); // 3 traits + mint year
+      expect(json.attributes.length).to.equal(5); // 3 traits + mint year + sender
     });
 
     it("Should return valid tokenURI for minted token with message", async function () {
@@ -446,7 +447,7 @@ describe("ValentineNFT", function () {
       expect(supply).to.equal(1); // We've only minted one token
 
       // Verify attributes length (should include message)
-      expect(json.attributes.length).to.equal(5); // 3 traits + mint year + message
+      expect(json.attributes.length).to.equal(6); // 3 traits + mint year + sender + message
       
       // Find message attribute
       const messageAttribute = json.attributes.find(

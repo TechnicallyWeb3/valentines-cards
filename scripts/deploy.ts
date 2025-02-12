@@ -1,9 +1,8 @@
 import { ethers } from "hardhat";
-import hre from "hardhat";
 import { traits } from "../artwork/valentines.svg";
 
 // Contract addresses
-const SVG_ASSEMBLER_ADDRESS = "0x2fA6E676F8645C9D28a9D1959DBD2B41F957E7BC";
+const SVG_ASSEMBLER_ADDRESS = "0xabfAaAC09045ae3D202709438d63d4c7a1C57A3d";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -16,7 +15,7 @@ async function main() {
   // Set Valentine's date
   const valentineDate = {
     month: 2, // February
-    day: 14
+    day: 12
   };
 
   const contractJson = "https://eternal.cards/contract.json";
@@ -37,6 +36,7 @@ async function main() {
     traitNames,
     SVG_ASSEMBLER_ADDRESS,
     mintPrice,
+    valentineDate,
     contractJson
   );
 

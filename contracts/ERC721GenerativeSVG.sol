@@ -143,8 +143,8 @@ abstract contract ERC721GenerativeSVG {
         }
 
         SVGData memory svg = SVGData(
-            _svgData.height,
             _svgData.width,
+            _svgData.height,
             _svgData.viewbox,
             _svgData.base64,
             svgAddresses
