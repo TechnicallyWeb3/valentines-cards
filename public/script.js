@@ -49,11 +49,6 @@ const profiles = [
 // Add this to your globals
 let recipients = [];
 
-// // Call this function after the DOM is loaded
-// document.addEventListener('DOMContentLoaded', function() {
-//     initializeFirstRecipientCard();
-//     document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
-// });
 // Update the initialization function to start timer immediately
 document.addEventListener('DOMContentLoaded', async function() {
     // Start countdown immediately with default date
@@ -99,56 +94,6 @@ document.getElementById('addRecipientButton').addEventListener('click', function
     addRecipient();
 });
 
-// // Add quantity change handler
-// document.getElementById('qtyRecipient0').addEventListener('change', function() {
-//     const quantity = parseInt(this.value);
-//     console.log("Recipient 0 QUANTITY: ", quantity);
-//     const customizeContent = document.getElementById('contentRecipient0');
-    
-//     // Clear existing content
-//     customizeContent.innerHTML = '';
-    
-//     // Add message fields based on quantity
-//     for (let i = 0; i < quantity; i++) {
-//         const messageContainer = document.createElement('div');
-//         messageContainer.innerHTML = `
-//             <label for="recipient0Message${i}">#${i + 1}</label>
-//             <input class="custom-message-input" 
-//                    type="text" 
-//                    id="recipient0Message${i}" 
-//                    placeholder="Write your sweet message here...">
-//         `;
-//         customizeContent.appendChild(messageContainer);
-//     }
-//     customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
-// });
-
-// document.getElementById('customizeRecipient0').addEventListener('click', function() {
-//     console.log("CUSTOMIZE RECIPIENT 0");
-//     const content = document.getElementById('contentRecipient0');
-//     const button = this;
-    
-//     // Toggle the active class on the button
-//     button.classList.toggle('active');
-    
-//     // Toggle the content visibility
-//     if (content.style.display === 'none' || !content.style.display) {
-//         content.style.display = 'block';
-//         // Optional: Add smooth animation
-//         content.style.maxHeight = content.scrollHeight + 'px';
-//     } else {
-//         content.style.display = 'none';
-//         content.style.maxHeight = null;
-//     }
-// });
-
-// document.getElementById('addressRecipient0').addEventListener('onchange', function() {
-//     console.log("ADDRESS RECIPIENT 0 UPDATED");
-//     const address = this.value;
-//     const recipientIndex = 0;
-//     updateRecipient(recipientIndex, 'address', address);
-// });
-
 
 // Add this function to create a recipient object
 function createRecipient(address = '', quantity = 1, message = '') {
@@ -163,13 +108,11 @@ function createRecipient(address = '', quantity = 1, message = '') {
 // Function to render all recipients
 function renderRecipients() {
     const container = document.querySelector('.valentine-card');
-    
-    if (recipients.length === 0) {
-        return;
-    }
+
+    console.log("RENDERING RECIPIENTS", recipients);
     
     let recipientsHTML = recipients.map((recipient, index) => `
-        <div class="recipient-card">
+        <div class="recipient-card" id="recipientCard${index}">
             <div class="input-group">
                 <div class="address-input">
                     <input type="text" 
@@ -186,7 +129,7 @@ function renderRecipients() {
                         min="${index === 0 ? 1 : 0}" 
                         max="100"
                         class="quantity-input"
-                        onchange="updateRecipient(${index}, 'quantity', this.value)">
+                        oninput="updateRecipient(${index}, 'quantity', this.value)">
                 </div>
             </div>
             <div class="customize-content" id="contentRecipient${index}" style="display: none;">
@@ -197,17 +140,21 @@ function renderRecipients() {
                            id="recipient${index}Message${i}" 
                            value="${recipient.messages?.[i] || ''}"
                            placeholder="Write your sweet message here..."
-                           onchange="updateCardMessage(${index}, ${i}, this.value)">
+                           oninput="updateCardMessage(${index}, ${i}, this.value)">
                 `).join('')}
             </div>
             <div class="customize-tab">
-                <button class="customize-button" id="customizeRecipient${index}">
+                <button class="customize-button" id="customizeRecipient${index}" 
+                    onclick="updateRecipient(${index}, 'expanded', ${!recipient.expanded})"
+                >
                     Customize Valentines
                     <span class="arrow-down">▼</span>
                 </button>
             </div>
         </div>
     `).join('');
+
+    // onclick="updateRecipient(${index}, 'expanded', ${!recipient.expanded})"
 
     // Insert before button container
     const buttonContainer = container.querySelector('.button-container');
@@ -226,65 +173,58 @@ function renderRecipients() {
     // Add new event listeners to the fresh elements
     recipients.forEach((recipient, index) => {
         const customizeButton = document.getElementById(`customizeRecipient${index}`);
-        const addressInput = document.getElementById(`addressRecipient${index}`);
-        const qtyInput = document.getElementById(`qtyRecipient${index}`);
 
         if (customizeButton) {
-            customizeButton.addEventListener('click', function() {
-                const content = document.getElementById(`contentRecipient${index}`);
-                this.classList.toggle('active');
-                
-                if (content.style.display === 'none' || !content.style.display) {
-                    content.style.display = 'block';
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                } else {
-                    content.style.display = 'none';
-                    content.style.maxHeight = null;
-                }
-            });
+            
         }
 
-        if (addressInput) {
-            addressInput.addEventListener('change', function() {
-                updateRecipient(index, 'address', this.value);
-            });
-        }
+        // if (addressInput) {
+        //     addressInput.addEventListener('change', function() {
+        //         updateRecipient(index, 'address', this.value);
+        //     });
+        // }
 
-        if (qtyInput) {
-            qtyInput.addEventListener('change', function() {
-                const quantity = parseInt(this.value);
-                const customizeContent = document.getElementById(`contentRecipient${index}`);
+        // if (qtyInput) {
+        //     qtyInput.addEventListener('change', function() {
+        //         const quantity = parseInt(this.value);
+        //         const customizeContent = document.getElementById(`contentRecipient${index}`);
                 
-                // Clear existing content
-                customizeContent.innerHTML = '';
+        //         // Clear existing content
+        //         customizeContent.innerHTML = '';
                 
-                // Add message fields based on quantity
-                for (let i = 0; i < quantity; i++) {
-                    const messageContainer = document.createElement('div');
-                    messageContainer.innerHTML = `
-                        <label for="recipient${index}Message${i}">#${i + 1}</label>
-                        <input class="custom-message-input" 
-                               type="text" 
-                               id="recipient${index}Message${i}" 
-                               value="${recipient.messages?.[i] || ''}"
-                               placeholder="Write your sweet message here...">
-                    `;
-                    customizeContent.appendChild(messageContainer);
-                }
+        //         // Add message fields based on quantity
+        //         for (let i = 0; i < quantity; i++) {
+        //             const messageContainer = document.createElement('div');
+        //             messageContainer.innerHTML = `
+        //                 <label for="recipient${index}Message${i}">#${i + 1}</label>
+        //                 <input class="custom-message-input" 
+        //                        type="text" 
+        //                        id="recipient${index}Message${i}" 
+        //                        value="${recipient.messages?.[i] || ''}"
+        //                        placeholder="Write your sweet message here...">
+        //             `;
+        //             customizeContent.appendChild(messageContainer);
+        //         }
                 
-                // Update max height for smooth animation
-                customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
+        //         // Update max height for smooth animation
+        //         customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
                 
-                // Update recipient data
-                updateRecipient(index, 'quantity', quantity);
-            });
-        }
+        //         // Update recipient data
+        //         updateRecipient(index, 'quantity', quantity);
+        //     });
+        // }
     });
 }
 
 // Update the recipient data
 function updateRecipient(index, field, value) {
+    if (field === 'quantity') {
+        value = parseInt(value);
+    }
+
     recipients[index][field] = value;
+    console.log("UPDATING RECIPIENT", recipients[index], field, value);
+
     if (field === 'quantity') {
         if (value > 1) {
             recipients[index].messages = recipients[index].messages || [];
@@ -299,10 +239,27 @@ function updateRecipient(index, field, value) {
         if (customizeContent) {
             updateMessageFields(index, value, recipients[index].messages || []);
         }
+    } else if (field === 'expanded') {
+        const content = document.getElementById(`contentRecipient${index}`);
+        const button = document.getElementById(`customizeRecipient${index}`);
+        button.classList.toggle('active');
+        
+        if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+            content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+            content.style.display = 'none';
+            content.style.maxHeight = null;
+        }
+    } else if (field === 'address') {
+        // don't need to render recipients
+        return;
     } else {
         renderRecipients();
     }
 }
+
+window.updateRecipient = updateRecipient;
 
 // New helper function to update message fields
 function updateMessageFields(index, quantity, messages) {
@@ -320,7 +277,8 @@ function updateMessageFields(index, quantity, messages) {
                    type="text" 
                    id="recipient${index}Message${i}" 
                    value="${messages[i] || ''}"
-                   placeholder="Write your sweet message here...">
+                   placeholder="Write your sweet message here..."
+                   oninput="updateCardMessage(${index}, ${i}, this.value)">
         `;
         customizeContent.appendChild(messageContainer);
     }
@@ -332,26 +290,79 @@ function updateMessageFields(index, quantity, messages) {
 function updateCardMessage(recipientIndex, cardIndex, message) {
     recipients[recipientIndex].messages = recipients[recipientIndex].messages || [];
     recipients[recipientIndex].messages[cardIndex] = message;
+    console.log("UPDATING CARD MESSAGE", recipientIndex, cardIndex, message);
 }
 
-function toggleRecipientDetails(index) {
-    recipients[index].expanded = !recipients[index].expanded;
-    renderRecipients();
-}
+window.updateCardMessage = updateCardMessage;
 
 function removeRecipient(index) {
+    // Remove from data array
     recipients.splice(index, 1);
-    renderRecipients();
+    
+    // Remove from DOM
+    const recipientCard = document.getElementById(`recipientCard${index}`);
+    if (recipientCard) {
+        recipientCard.parentElement.removeChild(recipientCard);
+    }
 }
 
 function addRecipient(profileData = null) {
-    console.log("ADDING RECIPIENT");
+    const index = recipients.length;
+    
+    // Add to data array
     if (profileData) {
+        console.log("ADDING RECIPIENT", profileData);
         recipients.push(createRecipient(profileData.address, 1, ''));
     } else {
         recipients.push(createRecipient());
     }
-    renderRecipients();
+    
+    // Create and add new recipient card to DOM
+    const container = document.querySelector('.recipients-container');
+    const recipientCard = document.createElement('div');
+    recipientCard.className = 'recipient-card';
+    recipientCard.id = `recipientCard${index}`;
+    
+    recipientCard.innerHTML = `
+        <div class="input-group">
+            <div class="address-input">
+                <input type="text" 
+                    id="addressRecipient${index}"
+                    value="${recipients[index].address}" 
+                    placeholder="Recipient's Polygon Address"
+                    onchange="updateRecipient(${index}, 'address', this.value)">
+            </div>
+            <div class="quantity-wrapper">
+                <span class="multiply">×</span>
+                <input type="number" 
+                    id="qtyRecipient${index}"
+                    value="${recipients[index].quantity}" 
+                    min="${index === 0 ? 1 : 0}" 
+                    max="100"
+                    class="quantity-input"
+                    onchange="updateRecipient(${index}, 'quantity', this.value)">
+            </div>
+        </div>
+        <div class="customize-content" id="contentRecipient${index}" style="display: none;">
+            ${Array(recipients[index].quantity).fill().map((_, i) => `
+                <label for="recipient${index}Message${i}">#${i + 1}</label>
+                <input class="custom-message-input" 
+                       type="text" 
+                       id="recipient${index}Message${i}" 
+                       value="${recipients[index].messages?.[i] || ''}"
+                       placeholder="Write your sweet message here..."
+                       oninput="updateCardMessage(${index}, ${i}, this.value)">
+            `).join('')}
+        </div>
+        <div class="customize-tab">
+            <button class="customize-button" id="customizeRecipient${index}" onclick="updateRecipient(${index}, 'expanded', ${!recipients[index].expanded})">
+                Customize Valentines
+                <span class="arrow-down">▼</span>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(recipientCard);
 }
 
 // Update the send valentine function
@@ -786,35 +797,6 @@ async function loadValentines(append = false) {
     }
 }
 
-// Function to initialize modal handlers
-function initializeModalHandlers() {
-    const modal = document.getElementById('valentineModal');
-    const modalImage = modal.querySelector('.modal-image');
-    const modalSender = modal.querySelector('.sender');
-    const modalYear = modal.querySelector('.year');
-    const modalMessage = modal.querySelector('.message');
-    
-    // document.querySelectorAll('.received-valentine').forEach(card => {
-    //     card.addEventListener('click', function(e) {
-    //         if (e.target.classList.contains('address-link')) {
-    //             return;
-    //         }
-            
-    //         const thumbnail = this.querySelector('.nft-image');
-    //         const sender = this.querySelector('.address-link');
-    //         const year = this.querySelector('.year').textContent;
-    //         const message = this.querySelector('.message').textContent;
-            
-    //         modalImage.src = thumbnail.src;
-    //         modalSender.innerHTML = `From: ${sender.outerHTML}`;
-    //         modalYear.textContent = year;
-    //         modalMessage.textContent = message;
-            
-    //         modal.style.display = 'flex';
-    //     });
-    // });
-}
-
 // Update the infinite scroll initialization
 function initializeInfiniteScroll() {
     const options = {
@@ -882,7 +864,7 @@ function initializeCarousel() {
     const carousel = document.querySelector('.profile-carousel');
     
     // Create profile cards
-    profiles.forEach(profile => {
+    profiles.forEach((profile, index) => {
         const card = document.createElement('div');
         card.className = 'profile-card';
         card.innerHTML = `
@@ -892,7 +874,7 @@ function initializeCarousel() {
             <div class="profile-info">
                 <div class="profile-name">${profile.name}</div>
                 ${isValentinesDay(getCurrentUTCDate()) ? `
-                    <button class="send-valentine-btn" id="send-connect-btn">
+                    <button class="send-valentine-btn" onclick="addRecipient(${index})">
                         Send Valentine 💝
                     </button>
                 ` : ''}
@@ -913,15 +895,6 @@ function initializeCarousel() {
         e.preventDefault();
         carousel.scrollLeft += e.deltaY;
     });
-
-    // // Update the send valentine button click handler
-    // document.getElementById('send-connect-btn').addEventListener('click', () => {
-    //     if (walletConnected) {
-    //         document.getElementById('create-valentine').scrollIntoView({ behavior: 'smooth' });
-    //     } else {
-    //         connectWallet();
-    //     }
-    // });
 }
 
 // Add this function to update the send button text
@@ -942,75 +915,6 @@ function updateSendButtonText() {
         
         sendButton.textContent = `Send${totalCards > 1 ? " " + totalCards : ""} Valentine${totalCards !== 1 ? 's' : ''} (${totalPrice} POL)`;
     }
-}
-
-// Select the send button
-const sendButton = document.querySelector('.valentine-card .send-valentines-btn');
-
-// Function to create a new recipient card
-function createRecipientCard() {
-    const recipientCard = document.createElement('div');
-    recipientCard.className = 'recipient-card'; // Class name for the recipient card
-    recipientCard.innerHTML = `
-        <div class="input-group">
-            <div class="address-input">
-                <input type="text" placeholder="Recipient's Polygon Address">
-            </div>
-            <div style="margin-bottom:15px" class="quantity-wrapper" id="quantity-wrapper">
-                <button class="quantity-button" id="decrementButton">-</button>
-                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input tokenAmount">
-                <button class="quantity-button" id="incrementButton">+</button>
-            </div>
-        </div>
-        <button class="view-more-button">View messages</button>
-        <div class="additional-inputs-container" style="display: none; margin-top: 5px;"></div>
-        <button class="remove-recipient" onclick="removeRecipient(this)">Remove Recipient</button>
-        <div class="customize-tab">
-            <button class="customize-button">
-                Customize Valentines
-                <span class="arrow-down">▼</span>
-            </button>
-        </div>
-        <div class="customize-content" style="display: none;"></div>
-    `;
-
-    // Insert the new recipient card before the "Add New Recipient" button
-    const addRecipientButton = document.getElementById('addRecipientButton');
-    addRecipientButton.parentNode.insertBefore(recipientCard, addRecipientButton); // Insert before the button
-
-    // Add event listener for the "View Messages" button
-    const viewMoreButton = recipientCard.querySelector('.view-more-button');
-    viewMoreButton.addEventListener('click', function() {
-        const additionalInputsContainer = recipientCard.querySelector('.additional-inputs-container');
-        if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
-            additionalInputsContainer.style.display = 'block'; // Show the container
-            const quantity = parseInt(recipientCard.querySelector('.recipient-quantity-input').value);
-            generateAdditionalInputs(additionalInputsContainer, quantity); // Pass the container and quantity
-        } else {
-            additionalInputsContainer.style.display = 'none'; // Hide the container
-        }
-    });
-
-    // Add event listeners for the quantity buttons
-    const decrementButton = recipientCard.querySelector('#decrementButton');
-    const incrementButton = recipientCard.querySelector('#incrementButton');
-    const quantityInput = recipientCard.querySelector('.recipient-quantity-input');
-
-    decrementButton.addEventListener('click', function() {
-        let currentValue = parseInt(quantityInput.value);
-        if (currentValue > 1) {
-            quantityInput.value = currentValue - 1;
-        }
-    });
-
-    incrementButton.addEventListener('click', function() {
-        let currentValue = parseInt(quantityInput.value);
-        if (currentValue < 10) {
-            quantityInput.value = currentValue + 1;
-        }
-    });
-
-    
 }
 
 // // Function to initialize the first recipient card
