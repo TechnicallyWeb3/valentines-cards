@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateSendButton();
         updateInstructions();
         initializeCarousel();
+        initializeFirstRecipientCard();
 
     } catch (error) {
         console.error('Error during initialization:', error);
@@ -98,48 +99,55 @@ document.getElementById('addRecipientButton').addEventListener('click', function
     addRecipient();
 });
 
-// Add quantity change handler
-document.getElementById('qtyRecipient0').addEventListener('change', function() {
-    const quantity = parseInt(this.value);
-    console.log("Recipient 0 QUANTITY: ", quantity);
-    const customizeContent = document.getElementById('contentRecipient0');
+// // Add quantity change handler
+// document.getElementById('qtyRecipient0').addEventListener('change', function() {
+//     const quantity = parseInt(this.value);
+//     console.log("Recipient 0 QUANTITY: ", quantity);
+//     const customizeContent = document.getElementById('contentRecipient0');
     
-    // Clear existing content
-    customizeContent.innerHTML = '';
+//     // Clear existing content
+//     customizeContent.innerHTML = '';
     
-    // Add message fields based on quantity
-    for (let i = 0; i < quantity; i++) {
-        const messageContainer = document.createElement('div');
-        messageContainer.innerHTML = `
-            <label for="recipient0Message${i}">#${i + 1}</label>
-            <input class="custom-message-input" 
-                   type="text" 
-                   id="recipient0Message${i}" 
-                   placeholder="Write your sweet message here...">
-        `;
-        customizeContent.appendChild(messageContainer);
-    }
-    customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
-});
+//     // Add message fields based on quantity
+//     for (let i = 0; i < quantity; i++) {
+//         const messageContainer = document.createElement('div');
+//         messageContainer.innerHTML = `
+//             <label for="recipient0Message${i}">#${i + 1}</label>
+//             <input class="custom-message-input" 
+//                    type="text" 
+//                    id="recipient0Message${i}" 
+//                    placeholder="Write your sweet message here...">
+//         `;
+//         customizeContent.appendChild(messageContainer);
+//     }
+//     customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
+// });
 
-document.getElementById('customizeRecipient0').addEventListener('click', function() {
-    console.log("CUSTOMIZE RECIPIENT 0");
-    const content = document.getElementById('contentRecipient0');
-    const button = this;
+// document.getElementById('customizeRecipient0').addEventListener('click', function() {
+//     console.log("CUSTOMIZE RECIPIENT 0");
+//     const content = document.getElementById('contentRecipient0');
+//     const button = this;
     
-    // Toggle the active class on the button
-    button.classList.toggle('active');
+//     // Toggle the active class on the button
+//     button.classList.toggle('active');
     
-    // Toggle the content visibility
-    if (content.style.display === 'none' || !content.style.display) {
-        content.style.display = 'block';
-        // Optional: Add smooth animation
-        content.style.maxHeight = content.scrollHeight + 'px';
-    } else {
-        content.style.display = 'none';
-        content.style.maxHeight = null;
-    }
-});
+//     // Toggle the content visibility
+//     if (content.style.display === 'none' || !content.style.display) {
+//         content.style.display = 'block';
+//         // Optional: Add smooth animation
+//         content.style.maxHeight = content.scrollHeight + 'px';
+//     } else {
+//         content.style.display = 'none';
+//         content.style.maxHeight = null;
+//     }
+// });
+
+// document.getElementById('addressRecipient0').addEventListener('onchange', function() {
+//     console.log("ADDRESS RECIPIENT 0 UPDATED");
+//     const address = this.value;
+//     const recipientIndex = 0;
+//     updateRecipient(recipientIndex, 'address', address);
+// });
 
 
 // Add this function to create a recipient object
@@ -157,8 +165,7 @@ function renderRecipients() {
     const container = document.querySelector('.valentine-card');
     
     if (recipients.length === 0) {
-        // Add a single empty recipient
-        recipients.push(createRecipient());
+        return;
     }
     
     let recipientsHTML = recipients.map((recipient, index) => `
@@ -216,24 +223,63 @@ function renderRecipients() {
     
     container.insertBefore(recipientsContainer, buttonContainer);
 
-    // Add event listeners for customize buttons
-    recipients.forEach((_, index) => {
-        document.getElementById(`customizeRecipient${index}`)?.addEventListener('click', function() {
-            const content = document.getElementById(`contentRecipient${index}`);
-            this.classList.toggle('active');
-            
-            if (content.style.display === 'none' || !content.style.display) {
-                content.style.display = 'block';
-                content.style.maxHeight = content.scrollHeight + 'px';
-            } else {
-                content.style.display = 'none';
-                content.style.maxHeight = null;
-            }
-        });
-    });
+    // Add new event listeners to the fresh elements
+    recipients.forEach((recipient, index) => {
+        const customizeButton = document.getElementById(`customizeRecipient${index}`);
+        const addressInput = document.getElementById(`addressRecipient${index}`);
+        const qtyInput = document.getElementById(`qtyRecipient${index}`);
 
-    // Update the send button text
-    updateSendButtonText();
+        if (customizeButton) {
+            customizeButton.addEventListener('click', function() {
+                const content = document.getElementById(`contentRecipient${index}`);
+                this.classList.toggle('active');
+                
+                if (content.style.display === 'none' || !content.style.display) {
+                    content.style.display = 'block';
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                } else {
+                    content.style.display = 'none';
+                    content.style.maxHeight = null;
+                }
+            });
+        }
+
+        if (addressInput) {
+            addressInput.addEventListener('change', function() {
+                updateRecipient(index, 'address', this.value);
+            });
+        }
+
+        if (qtyInput) {
+            qtyInput.addEventListener('change', function() {
+                const quantity = parseInt(this.value);
+                const customizeContent = document.getElementById(`contentRecipient${index}`);
+                
+                // Clear existing content
+                customizeContent.innerHTML = '';
+                
+                // Add message fields based on quantity
+                for (let i = 0; i < quantity; i++) {
+                    const messageContainer = document.createElement('div');
+                    messageContainer.innerHTML = `
+                        <label for="recipient${index}Message${i}">#${i + 1}</label>
+                        <input class="custom-message-input" 
+                               type="text" 
+                               id="recipient${index}Message${i}" 
+                               value="${recipient.messages?.[i] || ''}"
+                               placeholder="Write your sweet message here...">
+                    `;
+                    customizeContent.appendChild(messageContainer);
+                }
+                
+                // Update max height for smooth animation
+                customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
+                
+                // Update recipient data
+                updateRecipient(index, 'quantity', quantity);
+            });
+        }
+    });
 }
 
 // Update the recipient data
@@ -247,8 +293,40 @@ function updateRecipient(index, field, value) {
             removeRecipient(index);
             return;
         }
+        // Don't call renderRecipients for quantity changes
+        // Instead, just update the messages section
+        const customizeContent = document.getElementById(`contentRecipient${index}`);
+        if (customizeContent) {
+            updateMessageFields(index, value, recipients[index].messages || []);
+        }
+    } else {
+        renderRecipients();
     }
-    renderRecipients();
+}
+
+// New helper function to update message fields
+function updateMessageFields(index, quantity, messages) {
+    const customizeContent = document.getElementById(`contentRecipient${index}`);
+    
+    // Clear existing content
+    customizeContent.innerHTML = '';
+    
+    // Add message fields based on quantity
+    for (let i = 0; i < quantity; i++) {
+        const messageContainer = document.createElement('div');
+        messageContainer.innerHTML = `
+            <label for="recipient${index}Message${i}">#${i + 1}</label>
+            <input class="custom-message-input" 
+                   type="text" 
+                   id="recipient${index}Message${i}" 
+                   value="${messages[i] || ''}"
+                   placeholder="Write your sweet message here...">
+        `;
+        customizeContent.appendChild(messageContainer);
+    }
+    
+    // Update max height for smooth animation
+    customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
 }
 
 function updateCardMessage(recipientIndex, cardIndex, message) {
@@ -450,32 +528,6 @@ if (window.ethereum) {
         }
     });
 }
-
-// Add disconnect handler (for testing)
-function disconnectWallet() {
-    walletConnected = false;
-    updateSendButton();
-    loadValentines(); // This will hide the section
-    
-    // Reset wallet button
-    const button = document.getElementById('connectWallet');
-    button.innerHTML = `👛 <span class="wallet-text-long">Connect Wallet</span>`;
-    button.style.backgroundColor = 'white';
-}
-
-// // Update the valentine card HTML to remove the onclick
-// function updateValentineCardButton() {
-//     const valentineCard = document.querySelector('.valentine-card');
-//     if (valentineCard) {
-//         const buttonHtml = `<button>Connect Wallet to Send</button>`;
-//         // Find and replace the existing button
-//         const existingButton = valentineCard.querySelector('button:nth-of-type(2)');
-//         if (existingButton) {
-//             existingButton.outerHTML = buttonHtml;
-//         }
-//         updateSendButton();
-//     }
-// }
 
 // Update the initialization function to be more robust
 async function initializeContractDate() {
@@ -963,20 +1015,10 @@ function createRecipientCard() {
 
 // // Function to initialize the first recipient card
 function initializeFirstRecipientCard() {
-    const firstRecipientCard = document.querySelector('.recipient-card');
-    if (firstRecipientCard) {
-        const viewMoreButton = firstRecipientCard.querySelector('#viewMoreButton');
-        viewMoreButton.addEventListener('click', function() {
-            const additionalInputsContainer = firstRecipientCard.querySelector('#additionalInputsContainer');
-            if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
-                additionalInputsContainer.style.display = 'block'; // Show the container
-                const quantity = parseInt(firstRecipientCard.querySelector('.quantity-input').value);
-                generateAdditionalInputs(additionalInputsContainer, quantity); // Pass the container and quantity
-            } else {
-                additionalInputsContainer.style.display = 'none'; // Hide the container
-            }
-        });
+    if (recipients.length === 0) {
+        addRecipient();
     }
+    renderRecipients();
 }
 
 // Function to generate additional input fields based on quantity
