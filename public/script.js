@@ -903,25 +903,51 @@ document.getElementById('viewMoreButton').addEventListener('click', function() {
     }
 });
 
+// Function to create a new recipient card
 function createRecipientCard() {
     const recipientCard = document.createElement('div');
-    recipientCard.className = 'recipient-card';
+    recipientCard.className = 'recipient-card'; // Class name for the recipient card
     recipientCard.innerHTML = `
-        <div class="recipient-header">
+        <div class="input-group">
             <div class="address-input">
                 <input type="text" placeholder="Recipient's Polygon Address">
             </div>
             <div class="quantity-wrapper">
                 <span class="multiply">×</span>
-                <input type="number" value="1" min="1" max="10" class="quantity-input">
+                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input">
             </div>
-            <button class="remove-recipient" onclick="removeRecipient(this)">×</button>
         </div>
-        <div class="recipient-details" style="display: none;">
-            <!-- Additional details can go here -->
+        <button id="viewMoreButton">View messages</button>
+                <div id="additionalInputsContainer" style="display: none; margin-top: 5px;"></div>
+        <button class="remove-recipient" onclick="removeRecipient(this)">Remove Recipient</button>
+        <div class="message-toggle">
+            <input type="checkbox" class="custom-checkbox">
+            <label>Add Custom Message</label>
         </div>
+        <textarea placeholder="Write your sweet message here..." style="display: none;"></textarea>
     `;
-    document.getElementById('create-valentine').appendChild(recipientCard);
+
+    // Insert the new recipient card before the "Add New Recipient" button
+    const addRecipientButton = document.getElementById('addRecipientButton');
+    addRecipientButton.parentNode.insertBefore(recipientCard, addRecipientButton); // Insert before the button
+
+     // Add event listener for the "View Messages" button
+     const viewMoreButton = recipientCard.querySelector('.view-more-button');
+     viewMoreButton.addEventListener('click', function() {
+         const additionalInputsContainer = recipientCard.querySelector('.additional-inputs-container');
+         if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
+             additionalInputsContainer.style.display = 'block'; // Show the container
+             generateAdditionalInputs(recipientCard); // Call a function to generate inputs if needed
+         } else {
+             additionalInputsContainer.style.display = 'none'; // Hide the container
+         }
+     });
+    
 }
 
+
+
+// Add event listener for the "Add New Recipient" button
 document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+
+
