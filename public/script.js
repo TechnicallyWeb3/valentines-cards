@@ -681,10 +681,10 @@ function createValentineCard(valentine) {
                 <img src="${valentine.image}" alt="Valentine NFT" class="nft-image">
             </div>
             <div class="valentine-info">
+                <p class="year">${valentine.year}</p>
                 <p class="sender">From: <a href="https://polygonscan.com/address/${valentine.sender}" 
                     target="_blank" class="address-link">${formatAddress(valentine.sender)}</a></p>
-                <p class="year">${valentine.year}</p>
-                <p class="message">"${valentine.message}"</p>
+                ${valentine.message ? `<br><p class="message">"${valentine.message}"</p>` : ''}
             </div>
         </div>
     `;
@@ -775,25 +775,25 @@ function initializeModalHandlers() {
     const modalYear = modal.querySelector('.year');
     const modalMessage = modal.querySelector('.message');
     
-    document.querySelectorAll('.received-valentine').forEach(card => {
-        card.addEventListener('click', function(e) {
-            if (e.target.classList.contains('address-link')) {
-                return;
-            }
+    // document.querySelectorAll('.received-valentine').forEach(card => {
+    //     card.addEventListener('click', function(e) {
+    //         if (e.target.classList.contains('address-link')) {
+    //             return;
+    //         }
             
-            const thumbnail = this.querySelector('.nft-image');
-            const sender = this.querySelector('.address-link');
-            const year = this.querySelector('.year').textContent;
-            const message = this.querySelector('.message').textContent;
+    //         const thumbnail = this.querySelector('.nft-image');
+    //         const sender = this.querySelector('.address-link');
+    //         const year = this.querySelector('.year').textContent;
+    //         const message = this.querySelector('.message').textContent;
             
-            modalImage.src = thumbnail.src;
-            modalSender.innerHTML = `From: ${sender.outerHTML}`;
-            modalYear.textContent = year;
-            modalMessage.textContent = message;
+    //         modalImage.src = thumbnail.src;
+    //         modalSender.innerHTML = `From: ${sender.outerHTML}`;
+    //         modalYear.textContent = year;
+    //         modalMessage.textContent = message;
             
-            modal.style.display = 'flex';
-        });
-    });
+    //         modal.style.display = 'flex';
+    //     });
+    // });
 }
 
 // Update the infinite scroll initialization
@@ -937,9 +937,10 @@ function createRecipientCard() {
             <div class="address-input">
                 <input type="text" placeholder="Recipient's Polygon Address">
             </div>
-            <div class="quantity-wrapper">
-                <span class="multiply">×</span>
-                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input">
+            <div style="margin-bottom:15px" class="quantity-wrapper" id="quantity-wrapper">
+                <button class="quantity-button" id="decrementButton">-</button>
+                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input tokenAmount">
+                <button class="quantity-button" id="incrementButton">+</button>
             </div>
         </div>
         <button class="view-more-button">View messages</button>
@@ -970,6 +971,27 @@ function createRecipientCard() {
             additionalInputsContainer.style.display = 'none'; // Hide the container
         }
     });
+
+    // Add event listeners for the quantity buttons
+    const decrementButton = recipientCard.querySelector('#decrementButton');
+    const incrementButton = recipientCard.querySelector('#incrementButton');
+    const quantityInput = recipientCard.querySelector('.recipient-quantity-input');
+
+    decrementButton.addEventListener('click', function() {
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) {
+            quantityInput.value = currentValue - 1;
+        }
+    });
+
+    incrementButton.addEventListener('click', function() {
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue < 10) {
+            quantityInput.value = currentValue + 1;
+        }
+    });
+
+    
 }
 
 // // Function to initialize the first recipient card
