@@ -2,7 +2,7 @@ import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchM
 import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
-const DEV_MODE = false;  // Set this to false for production
+const DEV_MODE = true;  // Set this to false for production
 
 // Add at the top with other globals
 let walletConnected = false;
@@ -282,7 +282,7 @@ document.getElementById('connectWallet').addEventListener('click', async () => {
 
 // Add new function to update send button
 async function updateSendButton() {
-    const sendButton = document.querySelector('.valentine-card button');
+    const sendButton = document.querySelector('.valentine-card button:nth-of-type(2)');
     if (!walletConnected) {
         // const prices = await getMintPrices();
         // const qty = parseInt(document.getElementById('quantity').value);
@@ -397,7 +397,7 @@ function updateValentineCardButton() {
     if (valentineCard) {
         const buttonHtml = `<button>Connect Wallet to Send</button>`;
         // Find and replace the existing button
-        const existingButton = valentineCard.querySelector('button');
+        const existingButton = valentineCard.querySelector('button:nth-of-type(2)');
         if (existingButton) {
             existingButton.outerHTML = buttonHtml;
         }
@@ -931,3 +931,81 @@ function updateSendButtonText() {
         sendButton.textContent = `Send${totalCards > 1 ? " " + totalCards : ""} Valentine${totalCards !== 1 ? 's' : ''} (${totalPrice} POL)`;
     }
 }
+
+// Select the send button
+const sendButton = document.querySelector('.valentine-card .send-valentines-btn');
+
+// Function to generate additional input fields based on quantity
+function generateAdditionalInputs() {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const container = document.getElementById('additionalInputsContainer');
+    container.innerHTML = ''; // Clear previous inputs
+
+    for (let i = 0; i < quantity; i++) {
+        const inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.placeholder = `Additional Input ${i + 1}`;
+        inputField.className = 'additional-input';
+        container.appendChild(inputField);
+    }
+}
+
+// Event listener for the View More button
+document.getElementById('viewMoreButton').addEventListener('click', function() {
+    const container = document.getElementById('additionalInputsContainer');
+    if (container.style.display === 'none') {
+        generateAdditionalInputs(); // Generate inputs when showing
+        container.style.display = 'block'; // Show the container
+    } else {
+        container.style.display = 'none'; // Hide the container
+    }
+});
+
+// Function to create a new recipient card
+function createRecipientCard() {
+    const recipientCard = document.createElement('div');
+    recipientCard.className = 'recipient-card'; // Class name for the recipient card
+    recipientCard.innerHTML = `
+        <div class="input-group">
+            <div class="address-input">
+                <input type="text" placeholder="Recipient's Polygon Address">
+            </div>
+            <div class="quantity-wrapper">
+                <span class="multiply">×</span>
+                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input">
+            </div>
+        </div>
+        <button id="viewMoreButton">View messages</button>
+                <div id="additionalInputsContainer" style="display: none; margin-top: 5px;"></div>
+        <button class="remove-recipient" onclick="removeRecipient(this)">Remove Recipient</button>
+        <div class="message-toggle">
+            <input type="checkbox" class="custom-checkbox">
+            <label>Add Custom Message</label>
+        </div>
+        <textarea placeholder="Write your sweet message here..." style="display: none;"></textarea>
+    `;
+
+    // Insert the new recipient card before the "Add New Recipient" button
+    const addRecipientButton = document.getElementById('addRecipientButton');
+    addRecipientButton.parentNode.insertBefore(recipientCard, addRecipientButton); // Insert before the button
+
+     // Add event listener for the "View Messages" button
+     const viewMoreButton = recipientCard.querySelector('.view-more-button');
+     viewMoreButton.addEventListener('click', function() {
+         const additionalInputsContainer = recipientCard.querySelector('.additional-inputs-container');
+         if (additionalInputsContainer.style.display === 'none' || additionalInputsContainer.style.display === '') {
+             additionalInputsContainer.style.display = 'block'; // Show the container
+             generateAdditionalInputs(recipientCard); // Call a function to generate inputs if needed
+         } else {
+             additionalInputsContainer.style.display = 'none'; // Hide the container
+         }
+     });
+    
+}
+
+
+
+// Add event listener for the "Add New Recipient" button
+document.getElementById('addRecipientButton').addEventListener('click', createRecipientCard);
+
+
