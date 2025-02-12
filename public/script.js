@@ -944,14 +944,15 @@ function createRecipientCard() {
             <div class="address-input">
                 <input type="text" placeholder="Recipient's Polygon Address">
             </div>
-            <div class="quantity-wrapper">
-                <span class="multiply">×</span>
-                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input">
+            <div style="margin-bottom:15px" class="quantity-wrapper" id="quantity-wrapper">
+                <button class="quantity-button" id="decrementButton">-</button>
+                <input type="number" value="1" min="1" max="10" class="recipient-quantity-input tokenAmount">
+                <button class="quantity-button" id="incrementButton">+</button>
             </div>
         </div>
         <button class="view-more-button">View messages</button>
         <div class="additional-inputs-container" style="display: none; margin-top: 5px;"></div>
-        <button class="remove-recipient" onclick="removeRecipient(this)">Remove Recipient</button>
+        <button class="remove-recipient">Remove Recipient</button>
         <div class="message-toggle">
             <input type="checkbox" class="custom-checkbox">
             <label>Add Custom Message</label>
@@ -973,6 +974,25 @@ function createRecipientCard() {
             generateAdditionalInputs(additionalInputsContainer, quantity); // Pass the container and quantity
         } else {
             additionalInputsContainer.style.display = 'none'; // Hide the container
+        }
+    });
+
+    // Add event listeners for the quantity buttons
+    const decrementButton = recipientCard.querySelector('#decrementButton');
+    const incrementButton = recipientCard.querySelector('#incrementButton');
+    const quantityInput = recipientCard.querySelector('.recipient-quantity-input');
+
+    decrementButton.addEventListener('click', function() {
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) {
+            quantityInput.value = currentValue - 1;
+        }
+    });
+
+    incrementButton.addEventListener('click', function() {
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue < 10) {
+            quantityInput.value = currentValue + 1;
         }
     });
 }

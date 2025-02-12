@@ -1004,3 +1004,43 @@ html {
 .recipient-card {
     animation: slideIn 0.3s ease;
 }
+
+.tokenAmount {
+    background-color: #757575;
+    color: #ffffff;
+    padding: 10px 20px;
+    font-weight: bold;
+    text-align: center;
+    width: 60px; /* Adjust width as needed */
+    border: none; /* Remove default border */
+    outline: none; /* Remove outline on focus */
+    border-left: 1px solid rgb(255, 255, 255); /* Left border */
+    border-right: 1px solid rgb(255, 255, 255);
+    margin: 0; /* Right border */
+}
+
+/* Hide the default spinner controls */
+.tokenAmount::-webkit-inner-spin-button,
+.tokenAmount::-webkit-outer-spin-button {
+    -webkit-appearance: none; /* Hide spinner in Chrome/Safari */
+    margin: 0; /* Remove margin */
+}
+
+.tokenAmount::-moz-inner-spin-button,
+.tokenAmount::-moz-outer-spin-button {
+    -moz-appearance: none; /* Hide spinner in Firefox */
+    margin: 0; /* Remove margin */
+}
+
+.quantity-button {
+    background-color: #ff9090;
+    color: #ffffff;
+    padding: 5px 7px;
+    font-weight: bold;
+    text-align: center;
+    width: 50px; /* Adjust width as needed */
+    border: none; /* Remove default border */
+    outline: none; /* Remove outline on focus */
+    border-left: 1px solid rgb(255, 255, 255); /* Left border */
+    border-right: 1px solid rgb(255, 255, 255); /* Right border */
+}
