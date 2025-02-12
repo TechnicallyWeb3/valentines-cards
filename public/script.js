@@ -160,6 +160,8 @@ async function sendValentine() {
         ? document.getElementById('valentineMessage').value
         : ""; // Default message
 
+    
+
     // Example usage
     const recipientData = collectRecipientData();
     if (recipientData) {
@@ -279,7 +281,7 @@ document.getElementById('connectWallet').addEventListener('click', async () => {
 
 // Add new function to update send button
 async function updateSendButton() {
-    const sendButton = document.querySelector('.valentine-card button:nth-of-type(2)');
+    const sendButton = document.querySelector('.connectwalletbutton button');
     if (!walletConnected) {
         // const prices = await getMintPrices();
         // const qty = parseInt(document.getElementById('quantity').value);
@@ -1055,8 +1057,7 @@ function generateAdditionalInputs(container, quantity) {
 
 // Function to collect messages from additional input fields
 function collectMessages() {
-    const additionalInputsContainer = document.getElementById('additionalInputsContainer');
-    const inputFields = additionalInputsContainer.querySelectorAll('.additional-input');
+    const inputFields = document.querySelectorAll('.additional-inputs-container .additional-input');
     const messages = [];
 
     inputFields.forEach((inputField) => {
@@ -1085,24 +1086,52 @@ if (messages.length < quantity) {
 
 // Function to collect messages, recipient addresses, and token quantities
 function collectRecipientData() {
-    const messages = collectMessages(); // Collect messages from additional inputs
-    const recipientAddress = document.getElementById('recipientAddress').value; // Get recipient address
-    const tokenQuantity = parseInt(document.getElementById('quantity').value); // Get token quantity
+    const recipientData = []; // Array to hold all recipient data
+    const recipientCards = document.querySelectorAll('.recipient-card'); // Select all recipient cards
 
-    // Ensure that the number of messages matches the quantity
-    if (messages.length < tokenQuantity) {
-        console.error(`Expected ${tokenQuantity} messages, but got ${messages.length}.`);
-        return null; // Return null if there's a mismatch
-    } else {
-        // Create an array of recipient data
-        const recipientData = messages.slice(0, tokenQuantity).map((message) => ({
-            address: recipientAddress,
-            message: message,
-            quantity: 1
-        }));
+    recipientCards.forEach(card => {
+        const messages = collectMessagesFromCard(card); // Collect messages from the specific card
+        
+        // Get recipient address and ensure the element exists
+        const addressInput = card.querySelector('.address-input input');
+        const recipientAddress = addressInput ? addressInput.value : null; // Get recipient address safely
 
-        return recipientData; // Return the array of recipient data
-    }
+        // Get token quantity and ensure the element exists
+        const quantityInput = card.querySelector('.recipient-quantity-input');
+        const tokenQuantity = quantityInput ? parseInt(quantityInput.value) : 0; // Get token quantity safely
+
+        // Ensure that the number of messages matches the quantity
+        if (messages.length < tokenQuantity) {
+            console.error(`Expected ${tokenQuantity} messages, but got ${messages.length}.`);
+            return; // Skip this card if there's a mismatch
+        } else {
+            // Create an array of recipient data for this card
+            const cardRecipientData = messages.slice(0, tokenQuantity).map((message) => ({
+                address: recipientAddress,
+                message: message,
+                quantity: 1
+            }));
+
+            recipientData.push(...cardRecipientData); // Add this card's data to the main array
+        }
+    });
+
+    return recipientData; // Return the array of all recipient data
+}
+
+// Helper function to collect messages from a specific card
+function collectMessagesFromCard(card) {
+    const inputFields = card.querySelectorAll('.additional-inputs-container .additional-input');
+    const messages = [];
+
+    inputFields.forEach((inputField) => {
+        const message = inputField.value.trim(); // Get the trimmed value of the input
+        if (message) {
+            messages.push(message); // Add non-empty messages to the array
+        }
+    });
+
+    return messages; // Return the array of messages for this card
 }
 
 const sendButtons = document.querySelector('.valentine-card .send-valentines-btn');
