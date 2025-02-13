@@ -1071,12 +1071,12 @@ html {
 
 .carousel-container::before {
     left: 0;
-    background: linear-gradient(to right, #ffd6e6, transparent);
+    background: linear-gradient(to right, white, transparent);
 }
 
 .carousel-container::after {
     right: 0;
-    background: linear-gradient(to left, #ffd6e6, transparent);
+    background: linear-gradient(to left, white, transparent);
 }
 
 /* Remove the previous fade effects from .profile-carousel */
@@ -1790,4 +1790,66 @@ html {
         opacity: 0;
         transform: scale(3);
     }
+}
+
+/* Terms and Conditions specific styles */
+.valentine-card h2 {
+    text-align: left;  /* Override the center alignment from the general h2 style */
+    margin-top: 2rem;  /* Add some spacing above sections */
+}
+
+.last-updated {
+    text-align: right;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+/* Additional terms and conditions styling improvements */
+.valentine-card ul {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+}
+
+.valentine-card li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.valentine-card p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.disclaimer-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    margin: 2rem auto;
+    max-width: 900px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.disclaimer-container p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0 0 0.8rem 0;
+}
+
+.disclaimer-container p:last-child {
+    margin-bottom: 0;
+}
+
+.disclaimer-container a {
+    color: #ff4d79;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.disclaimer-container a:hover {
+    text-decoration: underline;
 }
