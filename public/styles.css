@@ -1610,19 +1610,22 @@ html {
     text-align: center;
     font-family: 'Bowlby One', serif;
     border: 4px solid #000;
-    margin-top: 110px;
     width: 80%;
     margin: auto;
     font-family: sans-serif;
     margin-top: 30px;
-    max-height: 500px;
+    padding: 30px;
+    overflow: hidden; /* Add this to contain the content */
 }
 
 .content {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-around;
     align-items: center;
-    gap: 50px;
+    padding: 20px;
+    gap: 30px;
+    max-width: 100%; /* Add this to ensure content doesn't overflow */
 }
 
 .image {
@@ -1645,90 +1648,73 @@ html {
     padding: 10px;
 }
 
-
-.heroSection {
-    margin-top: 60px;
-    padding: 30px 0;
-    width: 60%;
-    padding: 30px;
-}
-
-.content {
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 20px;
-}
-
-.image {
-    width: 250px;
+.text-and-samples {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%; /* Add this to ensure content doesn't overflow */
 }
 
 .text {
-    text-align: left;
-    max-width: 600px;
-
+    text-align: center;
+    z-index: 3;  /* Ensure text stays above the cards */
+    /* background-color: rgba(249, 235, 235, 0.9);  Semi-transparent background */
+    padding: 5px;
+    /* border-radius: 15px; */
+    margin-bottom: 5px;
 }
 
-.text h1 {
-    font-size: 2rem;
-    padding: 10px;
-    margin-bottom: 40px;
-}
-
-.text p {
-    padding: 10px;
-    font-size: 1.2rem;
+/* Update existing .content styles */
+.content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+    gap: 30px;
 }
 
 @media (max-width: 768px) {
-
-    .heroSection {
-        background-color: rgb(249, 235, 235);
-        border-radius: 20px;
-        box-shadow: 4px 4px 0px #000;
-        text-align: center;
-        font-family: 'Bowlby One', serif;
-        border: 4px solid #000;
-        width: 90%;
-        margin: auto;
-        font-family: sans-serif;
-        margin-top: 30px;
-    }
-
     .content {
-        display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 0px;
-    }
-
-    .image {
-        width: 150px;
-        height: auto;
-        margin-top: 0px;
-    }
-
-    .text h1 {
-        font-size: 1.4rem;
-        margin-bottom: 0px;
-        color: rgb(11, 11, 11);
-        line-height: 30px;
-    }
-
-    .text p {
-        font-size: 1rem;
-        color: #333;
-        text-align: center;
         padding: 10px;
+    }
+    
+    .text-and-samples {
+        width: 100%;
     }
 }
 
+.samples-container {
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+    gap: 30px;
+}
 
+/* Adjust image size to fit the new container */
+.samples-container .image {
+    width: 300px;
+    height: auto;
+    object-fit: contain;
+}
 
-
-
-
-
+@media (max-width: 768px) {
+    .samples-container {
+        aspect-ratio: auto;
+        min-height: 500px;
+        flex-direction: column;
+    }
+    
+    .samples-container .image {
+        width: 200px;
+    }
+}
 
 .heart_one {
     font-size: 6em;
@@ -1858,11 +1844,12 @@ html {
 
 .sample-nfts {
     position: relative;
-    height: 200px;  /* Reduced from 300px to 200px */
-    width: 500px;
+    height: 200px;
+    width: 400px; /* Reduced from 500px to better fit container */
     display: flex;
     justify-content: center;
     perspective: 1000px;
+    max-width: 100%; /* Add this to ensure content doesn't overflow */
 }
 
 .sample-nft-image {
@@ -1910,6 +1897,7 @@ html {
     flex-direction: column;
     align-items: center;
     gap: 5px;
+    max-width: 100%; /* Add this to ensure content doesn't overflow */
 }
 
 .text {
@@ -1934,6 +1922,7 @@ html {
 @media (max-width: 768px) {
     .content {
         flex-direction: column;
+        padding: 10px;
     }
     
     .text-and-samples {
