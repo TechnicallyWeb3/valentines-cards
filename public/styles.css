@@ -1033,6 +1033,10 @@ html {
     margin-bottom: 2rem;
 }
 
+.suggestions-title {
+    text-shadow: 0 0 8px white;
+}
+
 .carousel-container {
     position: relative;
     padding: 0;
@@ -1078,7 +1082,7 @@ html {
 /* Remove the previous fade effects from .profile-carousel */
 .profile-track {
     display: flex;
-    animation: scrollCards 30s linear infinite;
+    animation: scrollCards 60s linear infinite;
     width: fit-content;
     /* Ensure track takes full width of content */
 }
