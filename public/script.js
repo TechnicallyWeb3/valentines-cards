@@ -89,7 +89,11 @@ if (window.ethereum) {
 
 // Update the wallet connection handler
 document.getElementById('connectWallet').addEventListener('click', async () => {
-    await connectWallet();
+    if (!walletConnected) {
+        await connectWallet();
+    } else {
+        copyLink();
+    }
 });
 
 document.getElementById('sendValentineButton').addEventListener('click', function() {
@@ -104,6 +108,12 @@ document.getElementById('addRecipientButton').addEventListener('click', function
     addRecipient();
 });
 
+function copyLink() {
+    const link = window.location.href.endsWith('/') ? window.location.href.slice(0, -1) : window.location.href;
+    const address = window.ethereum ? "?recipient=" + window.ethereum.selectedAddress : "";
+    navigator.clipboard.writeText(link + address);
+    alert("Link copied to clipboard");
+}
 
 // Add this function to create a recipient object
 function createRecipient(address = '', quantity = 1, message = '') {
