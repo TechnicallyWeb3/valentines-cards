@@ -1036,20 +1036,21 @@ html {
 .suggestions-title {
     text-shadow: 0 0 8px white;
 }
-
 .carousel-container {
     position: relative;
     padding: 0;
     margin-top: 1.5rem;
+    background-color: white; /* Add white background */
+    border-radius: 15px; /* Round corners */
+    overflow: hidden; /* Ensure content doesn't overflow the rounded corners */
 }
 
 .profile-carousel {
     overflow-x: auto;
     position: relative;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    border-radius: 15px; /* Round corners */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -1071,12 +1072,12 @@ html {
 
 .carousel-container::before {
     left: 0;
-    background: linear-gradient(to right, #ffd6e6, transparent);
+    background: linear-gradient(to right, #ffffff, transparent);
 }
 
 .carousel-container::after {
     right: 0;
-    background: linear-gradient(to left, #ffd6e6, transparent);
+    background: linear-gradient(to left, #ffffff, transparent);
 }
 
 /* Remove the previous fade effects from .profile-carousel */
