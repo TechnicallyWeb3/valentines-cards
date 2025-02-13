@@ -1,5 +1,4 @@
-import { getValentineDate, fetchValentines, getMintPrices, mintValentine, batchMintValentines, NETWORK_DETAILS } from './contractConfig.js';
-import { getTikTokData, getTikTokAddress, getTikTokUser } from './tiktokUtils.js';
+import { getValentineDate, fetchValentines, getMintPrices, batchMintValentines, getValentineMetadata, addMessageToToken, NETWORK_DETAILS } from './contractConfig.js';
 
 // Development bypass - set to true to show valentine creation form regardless of date
 const DEV_MODE = false;  // Set this to false for production
@@ -10,8 +9,8 @@ let valentineDate = { month: 2, day: 14 }; // Default until loaded
 let isLoading = false;
 let currentIndex = 0;
 const BATCH_SIZE = 12;
-let observer; // Add this global variable to store the observer
-let currentSlide = 0;
+let sentObserver; // Add this global variable to store the observer for the sent section
+let receivedObserver; // Add this global variable to store the observer for the received section
 const profiles = [
     {
         name: "Vitalik Buterin",
@@ -48,34 +47,45 @@ const profiles = [
 
 // Add this to your globals
 let recipients = [];
+let sentValentines = [];
 
 // Update the initialization function to start timer immediately
 document.addEventListener('DOMContentLoaded', async function() {
     // Start countdown immediately with default date
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    initializeFirstRecipientCard();
 
     try {
         // Initialize contract date and other data
         await initializeContractDate();
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        initializeCarousel();
         
         // Update UI elements that depend on contract data
-        await Promise.all([
-            updatePrices(),
-            loadValentines()
-        ]);
-        
-        // Update UI elements that depend on both
-        updateSendButton();
+        await updatePrices();
         updateInstructions();
-        initializeCarousel();
-        initializeFirstRecipientCard();
 
     } catch (error) {
         console.error('Error during initialization:', error);
     }
 });
 
+// Update the chainChanged listener as well
+if (window.ethereum) {
+    window.ethereum.on('chainChanged', (chainId) => {
+        const targetChainId = `0x${Number(NETWORK_ID).toString(16)}`;
+        if (chainId !== targetChainId) {
+            walletConnected = false;
+            updateSendButton();
+            const button = document.getElementById('connectWallet');
+            button.innerHTML = `👛 <span class="wallet-text-long">Wrong Network</span>`;
+            button.style.backgroundColor = '#ffe0e0';
+        } else {
+            // Reconnect if we switch back to the correct network
+            connectWallet();
+        }
+    });
+}
 
 // Update the wallet connection handler
 document.getElementById('connectWallet').addEventListener('click', async () => {
@@ -133,15 +143,6 @@ function renderRecipients() {
                 </div>
             </div>
             <div class="customize-content" id="contentRecipient${index}" style="display: none;">
-                ${Array(recipient.quantity).fill().map((_, i) => `
-                    <label for="recipient${index}Message${i}">#${i + 1}</label>
-                    <input class="custom-message-input" 
-                           type="text" 
-                           id="recipient${index}Message${i}" 
-                           value="${recipient.messages?.[i] || ''}"
-                           placeholder="Write your sweet message here..."
-                           oninput="updateCardMessage(${index}, ${i}, this.value)">
-                `).join('')}
             </div>
             <div class="customize-tab">
                 <button class="customize-button" id="customizeRecipient${index}" 
@@ -154,8 +155,6 @@ function renderRecipients() {
         </div>
     `).join('');
 
-    // onclick="updateRecipient(${index}, 'expanded', ${!recipient.expanded})"
-
     // Insert before button container
     const buttonContainer = container.querySelector('.button-container');
     const recipientsContainer = document.createElement('div');
@@ -167,53 +166,14 @@ function renderRecipients() {
     if (existingContainer) {
         existingContainer.remove();
     }
+
+    // After inserting the HTML, update message fields for each recipient
+    recipients.forEach((recipient, index) => {
+        updateMessageFields(index, recipient.quantity, recipient.messages || []);
+    });
     
     container.insertBefore(recipientsContainer, buttonContainer);
 
-    // Add new event listeners to the fresh elements
-    recipients.forEach((recipient, index) => {
-        const customizeButton = document.getElementById(`customizeRecipient${index}`);
-
-        if (customizeButton) {
-            
-        }
-
-        // if (addressInput) {
-        //     addressInput.addEventListener('change', function() {
-        //         updateRecipient(index, 'address', this.value);
-        //     });
-        // }
-
-        // if (qtyInput) {
-        //     qtyInput.addEventListener('change', function() {
-        //         const quantity = parseInt(this.value);
-        //         const customizeContent = document.getElementById(`contentRecipient${index}`);
-                
-        //         // Clear existing content
-        //         customizeContent.innerHTML = '';
-                
-        //         // Add message fields based on quantity
-        //         for (let i = 0; i < quantity; i++) {
-        //             const messageContainer = document.createElement('div');
-        //             messageContainer.innerHTML = `
-        //                 <label for="recipient${index}Message${i}">#${i + 1}</label>
-        //                 <input class="custom-message-input" 
-        //                        type="text" 
-        //                        id="recipient${index}Message${i}" 
-        //                        value="${recipient.messages?.[i] || ''}"
-        //                        placeholder="Write your sweet message here...">
-        //             `;
-        //             customizeContent.appendChild(messageContainer);
-        //         }
-                
-        //         // Update max height for smooth animation
-        //         customizeContent.style.maxHeight = customizeContent.scrollHeight + 'px';
-                
-        //         // Update recipient data
-        //         updateRecipient(index, 'quantity', quantity);
-        //     });
-        // }
-    });
 }
 
 // Update the recipient data
@@ -398,7 +358,7 @@ function buildValentineArray() {
     
 }
 
-// Update the send valentine function
+// Update the send valentine function to store minted tokens
 async function sendValentine() {
     console.log("SENDING VALENTINE");
     const valentines = buildValentineArray();
@@ -419,24 +379,31 @@ async function sendValentine() {
     const valentinesGrids = document.querySelector('.valentines-grids');
     sentMessage.innerHTML = '<div class="valentine-sending">💌 Sending your valentine(s)...</div>';
     sentMessage.style.display = 'block';
- 
-    
 
     try {
         // Batch mint
         const result = await batchMintValentines(valentines);
         sentMessage.style.display = 'none';
-            receivedSection.style.display = 'block'
+        receivedSection.style.display = 'block';
 
-        // Fetch metadata for all minted tokens
-        const metadataPromises = result.mintedTokens.map(token => getValentineMetadata(token.tokenId));
-        const metadataArray = await Promise.all(metadataPromises);
+        // Store the newly minted valentines
+        sentValentines = [...sentValentines, ...result.mintedTokens];
+        
+        // Initialize sent valentines display if this is first mint
+        if (sentValentines.length === result.mintedTokens.length) {
+            initializeSentValentinesDisplay();
+        }
 
-        let valentinesHtml = metadataArray.map(metadata => createValentineSentCard(metadata)).join('');
+        // refresh sent valentines
+        await loadSentValentines();
 
-        valentinesGrids.innerHTML = `
-            ${valentinesHtml}
-        `;
+        // Reset the form to initial state
+        recipients = [];
+        const recipientsContainer = document.querySelector('.recipients-container');
+        if (recipientsContainer) {
+            recipientsContainer.innerHTML = ''; // Clear the container
+        }
+        addRecipient(); // Add fresh recipient card
         
     } catch (error) {
         console.error('Error sending valentine:', error);
@@ -446,17 +413,107 @@ async function sendValentine() {
                 <p>${'Transaction failed. Please try again.'}</p>
             </div>
         `;
-        return;
-    }
-
-    // Clear the form
-    document.getElementById('recipientAddress').value = '';
-    document.getElementById('quantity').value = '1';
-    if (customMessageEnabled) {
-        document.getElementById('valentineMessage').value = '';
     }
 }
 
+// Add these new functions for sent valentines handling
+let currentSentIndex = 0;
+let isSentLoading = false;
+
+function initializeSentValentinesDisplay() {
+    const sentSection = document.querySelector('.sent-valentines');
+    if (!sentSection.querySelector('.valentines-grids')) {
+        sentSection.innerHTML = `
+            <h2>Sent Valentines</h2>
+            <div class="valentines-grids"></div>
+        `;
+    }
+
+    // Initialize intersection observer for infinite scrolling
+    initializeSentInfiniteScroll();
+}
+
+async function loadSentValentines(append = false) {
+ const valentinesGrids = document.querySelector('.valentines-grids');
+    
+    try {
+        // Get the next batch of tokens
+        const currentBatch = sentValentines.slice(currentSentIndex, currentSentIndex + BATCH_SIZE);
+        
+        if (currentBatch.length === 0 && currentSentIndex === 0) {
+            valentinesGrids.innerHTML = `
+                <div class="no-valentines">
+                    <p>You haven't sent any valentines yet! 💝</p>
+                </div>
+            `;
+            return;
+        }
+
+        if (!append) {
+            valentinesGrids.innerHTML = '';
+        } else {
+            // Remove loading indicator if it exists
+            const loadingEl = valentinesGrids.querySelector('.loading-more');
+            if (loadingEl) loadingEl.remove();
+        }
+
+        // Fetch metadata for each token in the batch
+        const metadataPromises = currentBatch.map(token => getValentineMetadata(token.tokenId));
+        const metadataArray = await Promise.all(metadataPromises);
+
+        // Add the valentines to the display
+        metadataArray.forEach(metadata => {
+            valentinesGrids.innerHTML += createValentineSentCard(metadata);
+        });
+
+        // Add loading indicator if there might be more items
+        if (currentBatch.length === BATCH_SIZE && currentSentIndex + BATCH_SIZE < sentValentines.length) {
+            valentinesGrids.innerHTML += '<div class="loading-more"><span class="heart-loader">💝</span> Loading more valentines...</div>';
+            currentSentIndex += BATCH_SIZE;
+
+            // Observe the new loading indicator
+            const newLoadingMore = valentinesGrids.querySelector('.loading-more');
+            if (newLoadingMore && sentObserver) {
+                sentObserver.observe(newLoadingMore);
+            }
+        }
+
+    } catch (error) {
+        console.error('Error loading sent valentines:', error);
+        if (!append) {
+            valentinesGrids.innerHTML = '<div class="error">Error loading sent valentines 💔</div>';
+        }
+    } finally {
+        isSentLoading = false;
+    }
+}
+
+function initializeSentInfiniteScroll() {
+    const options = {
+        root: document.querySelector('.valentines-grids'),
+        rootMargin: '100px',
+        threshold: 0.1
+    };
+
+    // Disconnect existing observer if it exists
+    if (sentObserver) {
+        sentObserver.disconnect();
+    }
+
+    sentObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isSentLoading) {
+                loadSentValentines(true);
+            }
+        });
+    }, options);
+
+    // Observe the loading more element
+    const loadingMore = document.querySelector('.loading-more');
+    if (loadingMore) {
+        sentObserver.observe(loadingMore);
+    }
+}
 
 // Add new function to update send button
 async function updateSendButton() {
@@ -516,7 +573,7 @@ async function connectWallet() {
             button.style.backgroundColor = '#e0ffe0';
             
             // Load valentines after successful connection
-            loadValentines();
+            loadRecievedValentines();
         } catch (error) {
             console.error('Error connecting wallet:', error);
             alert('Error connecting wallet: ' + error.message);
@@ -524,23 +581,6 @@ async function connectWallet() {
     } else {
         alert('Please install MetaMask or another Web3 wallet to connect!');
     }
-}
-
-// Update the chainChanged listener as well
-if (window.ethereum) {
-    window.ethereum.on('chainChanged', (chainId) => {
-        const targetChainId = `0x${Number(NETWORK_ID).toString(16)}`;
-        if (chainId !== targetChainId) {
-            walletConnected = false;
-            updateSendButton();
-            const button = document.getElementById('connectWallet');
-            button.innerHTML = `👛 <span class="wallet-text-long">Wrong Network</span>`;
-            button.style.backgroundColor = '#ffe0e0';
-        } else {
-            // Reconnect if we switch back to the correct network
-            connectWallet();
-        }
-    });
 }
 
 // Update the initialization function to be more robust
@@ -684,8 +724,6 @@ function updateInstructions() {
     }
 }
 
-
-
 // Function to format address for display
 function formatAddress(address) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -702,12 +740,46 @@ function createValentineSentCard(valentine) {
                 <p class="year">${valentine.year}</p>
                 <p class="sender">From: <a href="https://polygonscan.com/address/${valentine.sender}" 
                     target="_blank" class="address-link">${formatAddress(valentine.sender)}</a></p>
-                ${valentine.message ? `<br><p class="message">"${valentine.message}"</p>` : `<button onclick="addMessage(${valentine.tokenId})" class="add-message-btn">Add Message</button>`}
+                ${valentine.message 
+                    ? `<br><p class="message">"${valentine.message}"</p>` 
+                    : `<div class="message-input-container">
+                        <textarea
+                            id="messageInput${valentine.id}" 
+                            class="after-message-input" 
+                            placeholder="Write your message..."></textarea>
+                        <button onclick="addMessage(${valentine.id})" class="add-message-btn">
+                            Add Message
+                        </button>
+                       </div>`
+                }
             </div>
         </div>
     `;
 }
-function createValentineCard(valentine) {
+
+// Add the addMessage function
+function addMessage(tokenId) {
+    const inputElement = document.getElementById(`messageInput${tokenId}`);
+    const buttonElement = inputElement.nextElementSibling;
+    
+    if (inputElement.style.display === 'none') {
+        // Show input field
+        inputElement.style.display = 'block';
+        buttonElement.textContent = 'Save Message';
+    } else {
+        // Save message
+        const message = inputElement.value.trim();
+        if (message) {
+            console.log(`Saving message for token ${tokenId}: ${message}`);
+            addMessageToToken(tokenId, message);
+        }
+    }
+}
+
+// Make addMessage available globally
+window.addMessage = addMessage;
+
+function createValentineReceivedCard(valentine) {
     return `
         <div class="received-valentine">
             <div class="valentine-thumbnail">
@@ -724,7 +796,7 @@ function createValentineCard(valentine) {
 }
 
 // Function to load and display valentines
-async function loadValentines(append = false) {
+async function loadRecievedValentines(append = false) {
     const receivedSection = document.querySelector('.received-valentines');
     const valentinesGrid = document.querySelector('.valentines-grid');
     
@@ -769,7 +841,7 @@ async function loadValentines(append = false) {
         }
         
         valentines.forEach(valentine => {
-            valentinesGrid.innerHTML += createValentineCard(valentine);
+            valentinesGrid.innerHTML += createValentineReceivedCard(valentine);
         });
         
         // Add loading indicator if there might be more items
@@ -779,14 +851,14 @@ async function loadValentines(append = false) {
             
             // Observe the new loading indicator
             const newLoadingMore = valentinesGrid.querySelector('.loading-more');
-            if (newLoadingMore && observer) {
-                observer.observe(newLoadingMore);
+            if (newLoadingMore && receivedObserver) {
+                receivedObserver.observe(newLoadingMore);
             }
         }
         
         // Initialize intersection observer only once
         if (!append) {
-            initializeInfiniteScroll();
+            initializeRecievedInfiniteScroll();
         }
     } catch (error) {
         console.error('Error loading valentines:', error);
@@ -799,7 +871,7 @@ async function loadValentines(append = false) {
 }
 
 // Update the infinite scroll initialization
-function initializeInfiniteScroll() {
+function initializeRecievedInfiniteScroll() {
     const options = {
         root: document.querySelector('.valentines-grid'),
         rootMargin: '100px',
@@ -807,14 +879,14 @@ function initializeInfiniteScroll() {
     };
     
     // Disconnect existing observer if it exists
-    if (observer) {
-        observer.disconnect();
+    if (receivedObserver) {
+        receivedObserver.disconnect();
     }
     
-    observer = new IntersectionObserver((entries) => {
+    receivedObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && !isLoading) {
-                loadValentines(true);
+                loadRecievedValentines(true);
             }
         });
     }, options);
@@ -822,12 +894,11 @@ function initializeInfiniteScroll() {
     // Observe the loading more element
     const loadingMore = document.querySelector('.loading-more');
     if (loadingMore) {
-        observer.observe(loadingMore);
+        receivedObserver.observe(loadingMore);
     }
 }
 
 // Add loading style
-
 async function updatePrices() {
     try {
         const prices = await getMintPrices();
@@ -842,11 +913,11 @@ async function updatePrices() {
         const messagePriceElement = document.getElementById('message-price');
         
         if (mintPriceElement) {
-            mintPriceElement.textContent = `${prices.card} POL`;
+            mintPriceElement.textContent = `${prices.card} ${NETWORK_DETAILS.nativeCurrency.symbol}`;
         }
         
         if (messagePriceElement) {
-            messagePriceElement.textContent = `+${prices.message} POL`;
+            messagePriceElement.textContent = `+${prices.message} ${NETWORK_DETAILS.nativeCurrency.symbol}`;
         }
         
         // // Update the main button text if wallet is not connected
@@ -903,20 +974,7 @@ function initializeFirstRecipientCard() {
     if (recipients.length === 0) {
         addRecipient();
     }
-    renderRecipients();
-}
-
-// Function to generate additional input fields based on quantity
-function generateAdditionalInputs(container, quantity) {
-    container.innerHTML = ''; // Clear previous inputs
-
-    for (let i = 0; i < quantity; i++) {
-        const inputField = document.createElement('input');
-        inputField.type = 'text';
-        inputField.placeholder = `Additional Input ${i + 1}`;
-        inputField.className = 'additional-input';
-        container.appendChild(inputField);
-    }
+    // renderRecipients();
 }
 
 

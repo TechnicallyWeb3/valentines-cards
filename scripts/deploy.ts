@@ -15,7 +15,7 @@ async function main() {
   // Set Valentine's date
   const valentineDate = {
     month: 2, // February
-    day: 12
+    day: 13
   };
 
   const contractJson = "https://eternal.cards/contract.json";

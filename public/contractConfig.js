@@ -1,9 +1,7 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
-// Initialize the global config object immediately
-window.contractConfig = {};
 
 // Constants
-export const VALENTINE_ADDRESS = '0xd6ff9859c50Eab41784749c18865E16Ca9d356FF';
+export const VALENTINE_ADDRESS = '0x3397005112d089d6DE0a0DFe2A7aa0D8e896C1f9';
 // export const NETWORK_ID = '137'; 
 // export const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
 const NETWORK_NAME = 'Sepolia';
@@ -140,10 +138,17 @@ export async function fetchValentines(address, startIndex = 0, endIndex = null) 
     
     try {
         const balance = await getBalance(address);
+        console.log("BALANCE: ", balance);
         if (balance === 0) return [];
 
-        // Calculate end index
-        const actualEndIndex = endIndex || Math.min(startIndex + MAX_FETCH_SIZE, balance);
+        // Calculate end index based on remaining tokens
+        const remainingTokens = balance - startIndex;
+        const maxFetchSize = Math.min(MAX_FETCH_SIZE, remainingTokens);
+        const actualEndIndex = endIndex ? 
+            Math.min(endIndex - startIndex, maxFetchSize) + startIndex : 
+            startIndex + maxFetchSize;
+
+        console.log("ACTUAL END INDEX: ", actualEndIndex);
         
         // Fetch tokens in range
         const fetchPromises = [];
@@ -181,113 +186,6 @@ export async function getMintPrices() {
     } catch (error) {
         console.error('Error getting mint prices:', error);
         return { card: "0.001", message: "0.005" }; // Fallback on error
-    }
-}
-
-// Add cookie helper functions
-function setCookie(name, value, days = 7) {
-    const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-}
-
-function getCookie(name) {
-    return document.cookie.split('; ').reduce((r, v) => {
-        const parts = v.split('=');
-        return parts[0] === name ? decodeURIComponent(parts[1]) : r;
-    }, '');
-}
-
-// Get stored minted tokens
-export function getMintedTokens() {
-    const tokens = getCookie('mintedTokens');
-    return tokens ? JSON.parse(tokens) : [];
-}
-
-// Mint a single valentine
-export async function mintValentine(to, message = "") {
-    if (!window.ethereum) {
-        throw new Error("MetaMask not installed");
-    }
-
-    try {
-        // Get contract with MetaMask provider
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        
-        const abi = await loadContractABI();
-        if (!abi) throw new Error("Failed to load contract ABI");
-        
-        const contract = new ethers.Contract(VALENTINE_ADDRESS, abi, signer);
-        const prices = await getMintPrices();
-        
-        // Calculate total price based on whether there's a message
-        const totalPrice = ethers.parseEther(
-            message ? 
-            (Number(prices.card) + Number(prices.message)).toString() : 
-            prices.card
-        );
-
-        // Validate message length if provided
-        if (message && message.length > 280) {
-            throw new Error("Message too long - maximum 280 characters");
-        }
-
-        // Choose appropriate mint function based on whether there's a message
-        let tx;
-        if (message) {
-            const valentine = {
-                to: to,
-                from: ethers.ZeroAddress,
-                message: message
-            };
-            tx = await contract.bulkMint([valentine], { value: totalPrice });
-        } else {
-            tx = await contract.mint(to, { value: totalPrice });
-        }
-
-        console.log("Transaction sent:", tx.hash);
-        
-        // Wait for transaction receipt
-        const receipt = await tx.wait();
-        
-        // Find ValentineMinted event in the logs
-        const valentineMintedEvent = receipt.logs
-            .map(log => {
-                try {
-                    return contract.interface.parseLog(log);
-                } catch (e) {
-                    return null;
-                }
-            })
-            .find(event => event && event.name === 'ValentineMinted');
-
-        if (valentineMintedEvent) {
-            const tokenId = valentineMintedEvent.args.tokenId;
-            console.log("Minted token ID:", tokenId);
-            
-            // Store the minted token in cookies
-            const mintedTokens = getMintedTokens();
-            mintedTokens.push({
-                tokenId: tokenId.toString(),
-                to: to,
-                message: message || "",
-                timestamp: Date.now()
-            });
-            setCookie('mintedTokens', JSON.stringify(mintedTokens));
-            
-            return {
-                success: true,
-                tokenId: tokenId.toString(),
-                transaction: tx.hash,
-                receipt: receipt
-            };
-        }
-
-        throw new Error("Failed to find minted token ID in transaction logs");
-
-    } catch (error) {
-        console.error('Error minting valentine:', error);
-        throw error;
     }
 }
 
@@ -357,11 +255,6 @@ export async function batchMintValentines(valentines) {
                 timestamp: Date.now()
             }));
 
-        // Store the minted tokens in cookies
-        const existingTokens = getMintedTokens();
-        const updatedTokens = [...existingTokens, ...mintedTokens];
-        setCookie('mintedTokens', JSON.stringify(updatedTokens));
-
         return {
             success: true,
             mintedTokens: mintedTokens,
@@ -383,23 +276,74 @@ async function getSigner() {
     return await provider.getSigner();
 }
 
-// // Initialize the contract config
-// document.addEventListener('DOMContentLoaded', () => {
-//     // Assign all functions to the global config object
-//     Object.assign(window.contractConfig, {
-//         CONTRACT_ADDRESS: VALENTINE_ADDRESS,
-//         NETWORK_ID,
-//         RPC_URL,
-//         getValentineDate,
-//         initializeContract,
-//         loadContractABI,
-//         getBalance,
-//         getTokenByIndex,
-//         fetchValentines,
-//         getMintPrices,
-//         mintValentine,
-//         batchMintValentines
-//     });
-    
-//     console.log('Contract config initialized');
-// }); 
+export async function addMessageToToken(tokenId, message) {
+    if (!window.ethereum) {
+        throw new Error("MetaMask not installed");
+    }
+
+    try {
+        const contract = await initializeContract();
+        if (!contract) throw new Error("Failed to initialize contract");
+
+        // Get current signer's address
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const signerAddress = await signer.getAddress();
+
+        // Get token metadata to check sender and existing message
+        const tokenURI = await contract.tokenURI(tokenId);
+        const base64Data = tokenURI.split(',')[1];
+        const decodedData = JSON.parse(atob(base64Data));
+        
+        // Find sender and message in attributes
+        const findAttribute = (traitType) => {
+            const attr = decodedData.attributes.find(a => a.trait_type === traitType);
+            return attr ? attr.value : null;
+        };
+
+        const tokenSender = findAttribute("Sender");
+        const existingMessage = findAttribute("Message");
+
+        // Perform prechecks
+        if (tokenSender.toLowerCase() !== signerAddress.toLowerCase()) {
+            throw new Error("Only the original sender can add a message");
+        }
+
+        if (existingMessage) {
+            throw new Error("Token already has a message");
+        }
+
+        if (message.length > 280) {
+            throw new Error("Message too long - maximum 280 characters");
+        }
+
+        // Get message price
+        const prices = await getMintPrices();
+        const messagePrice = ethers.parseEther(prices.message);
+
+        // Get contract with signer
+        const contractWithSigner = new ethers.Contract(
+            VALENTINE_ADDRESS, 
+            await loadContractABI(), 
+            signer
+        );
+
+        // Send transaction
+        const tx = await contractWithSigner.addMessage(tokenId, message, {
+            value: messagePrice
+        });
+
+        const receipt = await tx.wait();
+        
+        return {
+            success: true,
+            transaction: tx.hash,
+            receipt: receipt
+        };
+
+    } catch (error) {
+        console.error('Error adding message:', error);
+        throw error;
+    }
+}
+

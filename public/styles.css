@@ -118,7 +118,7 @@ input {
 }
 
 /* Update button specificity to exclude wallet button */
-button:not(.add-recipient-btn):not(.send-valentine-btn):not(.customize-button):not(.wallet-button) {
+button:not(.add-recipient-btn):not(.send-valentine-btn):not(.customize-button):not(.wallet-button):not(.add-message-btn) {
     display: block;
     padding: 1rem;
     background-color: #ff4d79;
@@ -611,12 +611,13 @@ h1 {
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
+    /* border-radius: 8px; */
 }
 
 .nft-image {
     height: 100%;
     object-fit: cover;
+    padding: 2px;
 }
 
 /* Modal styles */
@@ -681,7 +682,7 @@ h1 {
     max-width: 200px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;  /* Changed from center to allow natural flow */
     text-align: right;
     overflow: hidden;
 }
@@ -703,11 +704,38 @@ h1 {
     font-style: italic;
     color: #333;
     font-size: 0.9rem;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+    font-weight: 500;
     margin: 0;
+    word-wrap: break-word;      
+    overflow-wrap: break-word;  
+    hyphens: auto;             
+    height: calc(100% - 3.8rem);
+    width: 100%;               
+    box-sizing: border-box;
+    
+    /* Add scrolling for overflow */
+    overflow-y: auto;
+    scrollbar-width: thin;      /* Firefox */
+    scrollbar-color: #ff4d79 #ffe6eb;  /* Firefox */
+}
+
+/* Webkit scrollbar styling */
+.message::-webkit-scrollbar {
+    width: 6px;
+}
+
+.message::-webkit-scrollbar-track {
+    background: #ffe6eb;
+    border-radius: 3px;
+}
+
+.message::-webkit-scrollbar-thumb {
+    background: #ff4d79;
+    border-radius: 3px;
+}
+
+.message::-webkit-scrollbar-thumb:hover {
+    background: #ff1a53;
 }
 
 .loading, .loading-more {
@@ -1311,4 +1339,26 @@ html {
     outline: none;
     border-color: #ff4d79;
     box-shadow: 0 0 0 2px rgba(255, 77, 121, 0.1);
+}
+
+.after-message-input {
+    height: 100%;
+}
+
+.add-message-btn {
+    background-color: #ff4d79;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: auto;
+    min-width: auto !important;
+}
+
+.add-message-btn:hover {
+    background-color: #ffe6eb;
+    transform: none;
 }
