@@ -49,10 +49,29 @@ const profiles = [
 let recipients = [];
 let sentValentines = [];
 
-// Update the initialization function to start timer immediately
+// Add this global variable to track Valentine's Day state
+let isValentinesDayState = null;
+
+// Add this function to parse URL parameters
+function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        address: params.get('address'),
+        name: params.get('name')
+    };
+}
+
+// Update the initialization function
 document.addEventListener('DOMContentLoaded', async function() {
-    // Start countdown immediately with default date
-    initializeFirstRecipientCard();
+    // Get URL parameters
+    const { address, name } = getUrlParams();
+    
+    // Initialize first recipient with URL parameters if they exist
+    if (address || name) {
+        addRecipient(address, name, true);
+    } else {
+        addRecipient();
+    }
 
     try {
         // Initialize contract date and other data
@@ -108,10 +127,15 @@ document.getElementById('addRecipientButton').addEventListener('click', function
     addRecipient();
 });
 
+function generateLink() {
+    const link = window.location.href.split('?')[0];
+    const address = window.ethereum ? "?address=" + window.ethereum.selectedAddress : "";
+    return link + address;
+}
+
 function copyLink() {
-    const link = window.location.href.endsWith('/') ? window.location.href.slice(0, -1) : window.location.href;
-    const address = window.ethereum ? "?recipient=" + window.ethereum.selectedAddress : "";
-    navigator.clipboard.writeText(link + address);
+    const link = generateLink();
+    navigator.clipboard.writeText(link);
     alert("Link copied to clipboard");
 }
 
@@ -569,59 +593,48 @@ function isValentinesDay(date) {
 
 function updateCountdown() {
     const now = getCurrentUTCDate();
-    const currentYear = now.getUTCFullYear();
-    const isToday = isValentinesDay(now);
+    const currentIsValentinesDay = isValentinesDay(now);
     
-    const countdownContainer = document.getElementById('countdown-container');
-    const valentineCard = document.querySelector('.valentine-card');
-    const valentinesBanner = document.getElementById('valentines-banner');
-    const walletButton = document.getElementById('connectWallet');
-    const daysElements = document.querySelectorAll('.days-section');
-    let targetDate;
-    
-    // Check if we need to update the countdown label
-    const existingLabel = countdownContainer.querySelector('.countdown-label');
-    
-    if (isToday) {
-        // Show Valentine's banner, minting form, and wallet button
-        valentinesBanner.style.display = 'block';
-        valentineCard.style.display = 'block';
-        walletButton.classList.add('visible');
+    // Only update UI if Valentine's Day state has changed or this is first run
+    if (isValentinesDayState !== currentIsValentinesDay) {
+        isValentinesDayState = currentIsValentinesDay;
         
-        // Hide days section on Valentine's Day
-        daysElements.forEach(el => el.style.display = 'none');
+        const countdownContainer = document.getElementById('countdown-container');
+        const valentineCard = document.querySelector('.valentine-card');
+        const valentinesBanner = document.getElementById('valentines-banner');
+        const walletButton = document.getElementById('connectWallet');
+        const daysElements = document.querySelectorAll('.days-section');
         
-        // Count down to end of Valentine's Day
-        targetDate = new Date(Date.UTC(currentYear, valentineDate.month - 1, valentineDate.day + 1)); // Next day at midnight
-        countdownContainer.classList.add('minting-open');
-        
-        // Only add the label if it doesn't exist
-        if (!existingLabel) {
-            const countdownLabel = document.createElement('div');
-            countdownLabel.className = 'countdown-label';
-            countdownLabel.textContent = 'Minting closes in:';
-            countdownContainer.insertBefore(countdownLabel, document.querySelector('.countdown'));
+        if (currentIsValentinesDay) {
+            // Show Valentine's banner, minting form, and wallet button
+            valentinesBanner.style.display = 'block';
+            valentineCard.style.display = 'block';
+            walletButton.classList.add('visible');
+            daysElements.forEach(el => el.style.display = 'none');
+            countdownContainer.classList.add('minting-open');
+        } else {
+            // Hide Valentine's banner, minting form, and wallet button
+            valentinesBanner.style.display = 'none';
+            valentineCard.style.display = 'none';
+            walletButton.classList.remove('visible');
+            daysElements.forEach(el => el.style.display = 'flex');
+            countdownContainer.classList.remove('minting-open');
         }
-    } else {
-        // Hide Valentine's banner, minting form, and wallet button
-        valentinesBanner.style.display = 'none';
-        valentineCard.style.display = 'none';
-        walletButton.classList.remove('visible');
         
-        // Remove the label if it exists
-        if (existingLabel) {
-            existingLabel.remove();
-        }
-        // Show days section when counting down to Valentine's Day
-        daysElements.forEach(el => el.style.display = 'flex');
-        
-        // Count down to next Valentine's Day
-        targetDate = new Date(Date.UTC(currentYear, valentineDate.month - 1, valentineDate.day));
-        if (now > targetDate) {
-            targetDate = new Date(Date.UTC(currentYear + 1, valentineDate.month - 1, valentineDate.day));
-        }
-        countdownContainer.classList.remove('minting-open');
+        // Update instructions when state changes
+        updateInstructions();
     }
+    
+    // Always update the countdown numbers
+    const targetDate = currentIsValentinesDay
+        ? new Date(Date.UTC(now.getUTCFullYear(), valentineDate.month - 1, valentineDate.day + 1))
+        : new Date(Date.UTC(
+            now > new Date(Date.UTC(now.getUTCFullYear(), valentineDate.month - 1, valentineDate.day))
+                ? now.getUTCFullYear() + 1
+                : now.getUTCFullYear(),
+            valentineDate.month - 1,
+            valentineDate.day
+        ));
     
     const difference = targetDate - now;
     
@@ -635,9 +648,6 @@ function updateCountdown() {
     document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
     document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
     document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-    // console.log('Countdown updated:', days, hours, minutes, seconds);
-
-    updateInstructions();
 }
 
 function updateInstructions() {
@@ -645,6 +655,7 @@ function updateInstructions() {
     const isToday = isValentinesDay(now);
     
     const instructionsContent = document.getElementById('instructions-content');
+    const shareBox = document.querySelector('.share-box');
     
     if (isToday) {
         instructionsContent.innerHTML = `
@@ -669,7 +680,29 @@ function updateInstructions() {
             </ul>
         `;
     }
+    shareBox.innerHTML = `
+        <h3>💝 Share Your Valentine Link</h3>
+        <div class="share-message">
+            <textarea readonly class="share-text">💘 This Valentine's Day, let's make it special with an eternal gift - an immutable NFT valentine that will last forever on the blockchain! Join me at ${generateLink()} #Web3Valentine #NFTLove 📋</textarea>
+        </div>
+        <a href="javascript:void(0)" onclick="copyShareMessage()" class="share-hint">Click the message to copy and share on X/Twitter, Instagram, or your favorite social media!</a>
+    `;
+
+    // Add click handler to the textarea
+    const shareText = document.querySelector('.share-text');
+    if (shareText) {
+        shareText.addEventListener('click', copyShareMessage);
+    }
 }
+
+// Update the copy function
+async function copyShareMessage() {
+    const shareText = document.querySelector('.share-text');
+    await navigator.clipboard.writeText(shareText.value);
+    alert("Text copied to clipboard");
+}
+
+window.copyShareMessage = copyShareMessage;
 
 // Function to format address for display
 function formatAddress(address) {
@@ -705,21 +738,41 @@ function createValentineSentCard(valentine) {
 }
 
 // Add the addMessage function
-function addMessage(tokenId) {
+async function addMessage(tokenId) {
+    const messageContainer = document.getElementById(`messageInput${tokenId}`).parentElement;
     const inputElement = document.getElementById(`messageInput${tokenId}`);
     const buttonElement = inputElement.nextElementSibling;
     
-    if (inputElement.style.display === 'none') {
-        // Show input field
-        inputElement.style.display = 'block';
-        buttonElement.textContent = 'Save Message';
-    } else {
-        // Save message
-        const message = inputElement.value.trim();
-        if (message) {
-            console.log(`Saving message for token ${tokenId}: ${message}`);
-            addMessageToToken(tokenId, message);
+    try {
+        if (!walletConnected) {
+            alert('Please connect your wallet first');
+            return;
         }
+
+        const message = inputElement.value.trim();
+        if (!message) {
+            alert('Please enter a message');
+            return;
+        }
+
+        // Disable input and button during transaction
+        inputElement.disabled = true;
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'Saving...';
+        
+        // Attempt to add message to token
+        await addMessageToToken(tokenId, message);
+        
+        // On success, replace the input container with the static message
+        messageContainer.innerHTML = `<br><p class="message">"${message}"</p>`;
+        
+    } catch (error) {
+        console.error('Error adding message:', error);
+        // Re-enable input and button on failure
+        inputElement.disabled = false;
+        buttonElement.disabled = false;
+        buttonElement.textContent = 'Add Message';
+        alert('Failed to save message. Please try again.');
     }
 }
 
@@ -768,8 +821,7 @@ async function loadRecievedValentines(append = false) {
         const valentines = await fetchValentines(address, currentIndex, currentIndex + BATCH_SIZE);
         
         if (valentines.length === 0 && currentIndex === 0) {
-            valentinesGrid.innerHTML = `
-                <div class="no-valentines">
+            valentinesGrid.innerHTML = `                <div class="no-valentines">
                     <p class="heartbeat">💝 Don't worry, we love you! 💝</p>
                     <p class="sub-text">
                         <a href="#create-valentine" class="love-link">Spread the love - send a valentine to someone special!</a>
@@ -920,11 +972,5 @@ function initializeCarousel() {
     });
 }
 
-// // Function to initialize the first recipient card
-function initializeFirstRecipientCard() {
-    if (recipients.length === 0) {
-        addRecipient();
-    }
-}
 
 
