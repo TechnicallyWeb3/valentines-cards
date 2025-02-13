@@ -771,7 +771,6 @@ async function addMessage(tokenId) {
         inputElement.disabled = false;
         buttonElement.disabled = false;
         buttonElement.textContent = 'Add Message';
-        alert('Failed to save message. Please try again.');
     }
 }
 
