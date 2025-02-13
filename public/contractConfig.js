@@ -1,7 +1,7 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
 
 // Constants
-export const VALENTINE_ADDRESS = '0x3397005112d089d6DE0a0DFe2A7aa0D8e896C1f9';
+export const VALENTINE_ADDRESS = '0xf5F4A8e3C1e11623D83a23E50039407F11dCD656';
 // export const NETWORK_ID = '137'; 
 // export const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
 const NETWORK_NAME = 'Sepolia';

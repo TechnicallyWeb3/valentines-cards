@@ -382,7 +382,7 @@ async function sendValentine() {
         await loadSentValentines();
 
         // Reset the form to initial state
-        recipients = [createRecipient()];
+        recipients = [];
         renderRecipients();
         
     } catch (error) {

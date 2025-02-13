@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { traits } from "../artwork/valentines.svg";
 
 // Contract addresses
-const SVG_ASSEMBLER_ADDRESS = "0xabfAaAC09045ae3D202709438d63d4c7a1C57A3d";
+const SVG_ASSEMBLER_ADDRESS = "0x07f26a3612577282Bc1f62f9E0C567D7a61634c9";
 
 async function main() {
   const [deployer] = await ethers.getSigners();

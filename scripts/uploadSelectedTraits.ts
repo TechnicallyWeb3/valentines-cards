@@ -4,7 +4,7 @@ import { traits } from '../artwork/valentines.svg';
 
 // Contract addresses
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
-const VALENTINE_NFT_ADDRESS = '0x3397005112d089d6DE0a0DFe2A7aa0D8e896C1f9'; // Polygon
+const VALENTINE_NFT_ADDRESS = '0xf5F4A8e3C1e11623D83a23E50039407F11dCD656'; // Polygon
 
 async function uploadSelectedTraits(traitIndices: number[]) {
     // Initialize contracts
@@ -13,7 +13,7 @@ async function uploadSelectedTraits(traitIndices: number[]) {
     const valentine = await hre.ethers.getContractAt('ValentineNFT', VALENTINE_NFT_ADDRESS, signer);
 
     // Process each category
-    for (let categoryId = 0; categoryId < traitIndices.length; categoryId++) {
+    for (let categoryId = 1; categoryId < traitIndices.length; categoryId++) {
         const selectedIndex = traitIndices[categoryId];
         const category = Object.values(traits)[categoryId];
         if (!category || selectedIndex >= category.traits.length) {
