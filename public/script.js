@@ -117,63 +117,17 @@ function createRecipient(address = '', quantity = 1, message = '') {
 
 // Function to render all recipients
 function renderRecipients() {
-    const container = document.querySelector('.valentine-card');
 
     console.log("RENDERING RECIPIENTS", recipients);
-    
-    let recipientsHTML = recipients.map((recipient, index) => `
-        <div class="recipient-card" id="recipientCard${index}">
-            <div class="input-group">
-                <div class="address-input">
-                    <input type="text" 
-                        id="addressRecipient${index}"
-                        value="${recipient.address}" 
-                        placeholder="Recipient's Polygon Address"
-                        onchange="updateRecipient(${index}, 'address', this.value)">
-                </div>
-                <div class="quantity-wrapper">
-                    <span class="multiply">×</span>
-                    <input type="number" 
-                        id="qtyRecipient${index}"
-                        value="${recipient.quantity}" 
-                        min="${index === 0 ? 1 : 0}" 
-                        max="100"
-                        class="quantity-input"
-                        oninput="updateRecipient(${index}, 'quantity', this.value)">
-                </div>
-            </div>
-            <div class="customize-content" id="contentRecipient${index}" style="display: none;">
-            </div>
-            <div class="customize-tab">
-                <button class="customize-button" id="customizeRecipient${index}" 
-                    onclick="updateRecipient(${index}, 'expanded', ${!recipient.expanded})"
-                >
-                    Customize Valentines
-                    <span class="arrow-down">▼</span>
-                </button>
-            </div>
-        </div>
-    `).join('');
 
-    // Insert before button container
-    const buttonContainer = container.querySelector('.button-container');
-    const recipientsContainer = document.createElement('div');
-    recipientsContainer.className = 'recipients-container';
-    recipientsContainer.innerHTML = recipientsHTML;
-    
-    // Remove existing recipients container if it exists
-    const existingContainer = container.querySelector('.recipients-container');
-    if (existingContainer) {
-        existingContainer.remove();
+    const recipientsContainer = document.querySelector('.recipients-container');
+    if (recipientsContainer) {
+        recipientsContainer.innerHTML = ''; // Clear the container
     }
 
-    // After inserting the HTML, update message fields for each recipient
-    recipients.forEach((recipient, index) => {
-        updateMessageFields(index, recipient.quantity, recipient.messages || []);
+    recipients.forEach(recipient => {
+        addRecipient(recipient.address);
     });
-    
-    container.insertBefore(recipientsContainer, buttonContainer);
-
 }
 
 // Update the recipient data
@@ -193,8 +147,7 @@ function updateRecipient(index, field, value) {
             removeRecipient(index);
             return;
         }
-        // Don't call renderRecipients for quantity changes
-        // Instead, just update the messages section
+
         const customizeContent = document.getElementById(`contentRecipient${index}`);
         if (customizeContent) {
             updateMessageFields(index, value, recipients[index].messages || []);
@@ -266,24 +219,12 @@ function removeRecipient(index) {
     }
 }
 
-function addRecipient(profileIndex = null) {
+// Function to add a new recipient with optional parameters
+function addRecipient(address = '', name = '', readonly = false) {
     const index = recipients.length;
-    let profileName = "";
     
     // Add to data array
-    if (profileIndex !== null) {
-        if (profileIndex > profiles.length - 1) {
-            profileIndex = null;
-            console.error("NON EXISTING PROFILE INDEX", profileIndex);
-            return;
-        }
-        console.log("ADDING RECIPIENT", profileIndex);
-        recipients.push(createRecipient(profiles[profileIndex].address, 1, ''));
-        profileName = `<span class="profile-name">${profiles[profileIndex].name}</span>`;
-    } else {
-        console.log("ADDING NEW RECIPIENT", recipients.length);
-        recipients.push(createRecipient());
-    }
+    recipients.push(createRecipient(address, 1, ''));
     
     // Create and add new recipient card to DOM
     const container = document.querySelector('.recipients-container');
@@ -296,10 +237,10 @@ function addRecipient(profileIndex = null) {
             <div class="address-input">
                 <input type="text" 
                     id="addressRecipient${index}"
-                    value="${recipients[index].address}" 
+                    value="${address}" 
                     placeholder="Recipient's Polygon Address"
                     onchange="updateRecipient(${index}, 'address', this.value)"
-                    ${profileIndex ? 'readonly' : ''}>
+                    ${readonly ? 'readonly' : ''}>
             </div>
             <div class="quantity-wrapper">
                 <span class="multiply">×</span>
@@ -312,7 +253,7 @@ function addRecipient(profileIndex = null) {
                     onchange="updateRecipient(${index}, 'quantity', this.value)">
             </div>
         </div>
-        ${profileName}
+        ${name ? `<span class="profile-name">${name}</span>` : ''}
         <div class="customize-content" id="contentRecipient${index}" style="display: none;">
             ${Array(recipients[index].quantity).fill().map((_, i) => `
                 <label for="recipient${index}Message${i}">#${i + 1}</label>
@@ -320,7 +261,7 @@ function addRecipient(profileIndex = null) {
                        type="text" 
                        id="recipient${index}Message${i}" 
                        value="${recipients[index].messages?.[i] || ''}"
-                       placeholder="Write your sweet message here..."
+                       placeholder="Write your sweet message..."
                        oninput="updateCardMessage(${index}, ${i}, this.value)">
             `).join('')}
         </div>
@@ -398,12 +339,8 @@ async function sendValentine() {
         await loadSentValentines();
 
         // Reset the form to initial state
-        recipients = [];
-        const recipientsContainer = document.querySelector('.recipients-container');
-        if (recipientsContainer) {
-            recipientsContainer.innerHTML = ''; // Clear the container
-        }
-        addRecipient(); // Add fresh recipient card
+        recipients = [createRecipient()];
+        renderRecipients();
         
     } catch (error) {
         console.error('Error sending valentine:', error);
@@ -936,7 +873,7 @@ function initializeCarousel() {
     const carousel = document.querySelector('.profile-carousel');
     
     // Create profile cards
-    profiles.forEach((profile, index) => {
+    profiles.forEach((profile) => {
         const card = document.createElement('div');
         card.className = 'profile-card';
         card.innerHTML = `
@@ -946,7 +883,11 @@ function initializeCarousel() {
             <div class="profile-info">
                 <div class="profile-name">${profile.name}</div>
                 ${isValentinesDay(getCurrentUTCDate()) ? `
-                    <button class="send-valentine-btn" onclick="addRecipient(${index})">
+                    <button class="send-valentine-btn" onclick="addRecipient(
+                    '${profile.address}', 
+                    '${profile.name}', 
+                    true
+                    )">
                         Send Valentine 💝
                     </button>
                 ` : ''}
@@ -974,7 +915,6 @@ function initializeFirstRecipientCard() {
     if (recipients.length === 0) {
         addRecipient();
     }
-    // renderRecipients();
 }
 
 
