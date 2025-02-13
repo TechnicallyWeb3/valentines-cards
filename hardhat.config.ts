@@ -17,9 +17,12 @@ const config: HardhatUserConfig = {
     version: "0.8.20",
     settings: {
       optimizer: {
-        enabled: true,
-        runs: 200
-      }
+        enabled: false,
+        // or if you want to enable with specific settings:
+        // enabled: true,
+        // runs: 200
+      },
+      viaIR: false  // you might also want to disable IR-based compilation
     }
   },
   networks: {

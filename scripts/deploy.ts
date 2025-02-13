@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import hre from "hardhat";
 import { traits } from "../artwork/valentines.svg";
 
 // Contract addresses
@@ -42,14 +43,15 @@ async function main() {
 
   // console.log("Verifying ValentineNFT...");
   // await hre.run("verify:verify", {
-  //   address: "0x2F2DAa6af903B01F6F87011242386F686bc61ce1",
+  //   address: "0xc82cE02df7D108D3A7D260B45aA69E9ec4013CEB", // polygon
   //   constructorArguments: [
-  //     "Valentine NFT",
-  //     "VNFT",
+  //     "Eternal Cards",
+  //     "ECARD",
   //     traitIds,
   //     traitNames,
   //     SVG_ASSEMBLER_ADDRESS,
   //     mintPrice,
+  //     valentineDate,
   //     contractJson
   //   ]
   // });

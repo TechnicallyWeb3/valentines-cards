@@ -142,7 +142,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
     }
 
     function _generateTrait(uint8 trait) internal view returns (uint256) {
-        require(trait < traitIds.length, "Trait out of range");
+        if (trait >= traitIds.length) revert TraitIndexOutOfBounds(traitIds.length);
         uint256 maxTrait = traitData[traitIds[trait]].length;
         return
             uint256(keccak256(abi.encodePacked(pseudoRandomSeed, trait))) %
@@ -309,7 +309,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
 
     function withdraw(address to) public onlyOwner {
         (bool success, ) = to.call{value: address(this).balance}("");
-        require(success, "Failed to send Ether");
+        if (!success) revert WithdrawFailed();
     }
 
     //  Add supportsInterface override to handle multiple inheritance
@@ -337,6 +337,7 @@ contract ValentineNFT is ERC721GenerativeSVG, Ownable, ERC721Enumerable, ERC2981
     error MessageTooLong();
     error BatchTooLarge();
     error MintingDisabled();
+    error WithdrawFailed();
 
     // Add these events at the top of the contract
     event MessageAdded(uint256 indexed tokenId, string message);

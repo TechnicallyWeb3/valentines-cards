@@ -44,7 +44,7 @@ abstract contract ERC721GenerativeSVG {
             }
         }
         
-        if (!found) revert InvalidTraitId(_traitId);
+        if (!found) revert InvalidTraitId();
         _;
     }
 
@@ -57,10 +57,8 @@ abstract contract ERC721GenerativeSVG {
         string[] memory _traitIds,
         string[] memory _traitNames
     ) internal virtual {
-        require(
-            _traitIds.length == _traitNames.length,
-            "Trait IDs and names must have the same length"
-        );
+        if (_traitIds.length != _traitNames.length) revert TraitLengthMismatch();
+        
         // deletes to reset, overriding this function is dangerous and could break lots of stuff.
         delete traitIds;
         for (uint256 i = 0; i < _traitIds.length; i++) {
@@ -86,10 +84,7 @@ abstract contract ERC721GenerativeSVG {
         uint256[] memory _traitList,
         SVGData memory _svgData
     ) internal view virtual returns (string memory) {
-        require(
-            _traitList.length == traitIds.length,
-            "Trait list must have the same length as trait IDs"
-        );
+        if (_traitList.length != traitIds.length) revert TraitLengthMismatch();
 
         // Create array to store SVG addresses
         bytes32[] memory svgAddresses = new bytes32[](_traitList.length);
@@ -100,10 +95,7 @@ abstract contract ERC721GenerativeSVG {
             Trait[] storage traits = traitData[traitIds[i]];
             
             // Ensure the selected trait index exists
-            require(
-                _traitList[i] < traits.length,
-                "Trait index out of bounds"
-            );
+            if (_traitList[i] >= traits.length) revert TraitIndexOutOfBounds(traits.length);
             
             // Get the SVG address for the selected trait
             svgAddresses[i] = traits[_traitList[i]].svgAddress;
@@ -133,10 +125,7 @@ abstract contract ERC721GenerativeSVG {
             uint256 traitIndex = tokenStats[_tokenId][traitIds[i]];
             
             // Ensure the trait index exists
-            require(
-                traitIndex < traits.length,
-                "Trait index out of bounds"
-            );
+            if (traitIndex >= traits.length) revert TraitIndexOutOfBounds(traits.length);
             
             // Get the SVG address directly
             svgAddresses[i] = traits[traitIndex].svgAddress;
@@ -156,6 +145,7 @@ abstract contract ERC721GenerativeSVG {
     
     // events
     // errors
-    error InvalidTraitId(string traitId);
-    error Unoriginal(uint256 value);
+    error InvalidTraitId();
+    error TraitLengthMismatch();
+    error TraitIndexOutOfBounds(uint256 maxTraitIndex);
 }
