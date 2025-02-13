@@ -643,6 +643,7 @@ function updateCountdown() {
         const valentinesBanner = document.getElementById('valentines-banner');
         const walletButton = document.getElementById('connectWallet');
         const daysElements = document.querySelectorAll('.days-section');
+        const countdownLabel = document.querySelector('.countdown-label');
         
         if (currentIsValentinesDay) {
             // Show Valentine's banner, minting form, and wallet button
@@ -651,6 +652,7 @@ function updateCountdown() {
             walletButton.classList.add('visible');
             daysElements.forEach(el => el.style.display = 'none');
             countdownContainer.classList.add('minting-open');
+            countdownLabel.textContent = 'Minting closes in:';
         } else {
             // Hide Valentine's banner, minting form, and wallet button
             valentinesBanner.style.display = 'none';
@@ -658,6 +660,7 @@ function updateCountdown() {
             walletButton.classList.remove('visible');
             daysElements.forEach(el => el.style.display = 'flex');
             countdownContainer.classList.remove('minting-open');
+            countdownLabel.textContent = 'Minting opens in:';
         }
         
         // Update instructions when state changes

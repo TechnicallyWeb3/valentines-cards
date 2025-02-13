@@ -14,6 +14,7 @@ const NETWORK_SYMBOL = 'S.ETH';
 const NETWORK_ID = '11155111';
 const RPC_URL = 'https://ethereum-sepolia.publicnode.com';
 const NETWORK_EXPLORER_URL = 'https://sepolia.etherscan.io';
+
 export const NETWORK_DETAILS = {
     chainId: NETWORK_ID,
     chainName: NETWORK_NAME,
