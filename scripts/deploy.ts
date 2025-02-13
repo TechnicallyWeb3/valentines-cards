@@ -15,23 +15,23 @@ async function main() {
   // Set Valentine's date
   const valentineDate = {
     month: 2, // February
-    day: 13
+    day: 14
   };
 
   const contractJson = "https://eternal.cards/contract.json";
 
   // Set mint prices
   const mintPrice = {
-    card: ethers.parseEther("0.001"),    // 0.01 ETH per card
-    message: ethers.parseEther("0.005")  // 0.005 ETH per message
+    card: ethers.parseEther("3"),    // 0.01 ETH per card
+    message: ethers.parseEther("15")  // 0.005 ETH per message
   };
 
   // Deploy ValentineNFT
   console.log("Deploying ValentineNFT...");
   const ValentineNFT = await ethers.getContractFactory("ValentineNFT");
   const valentineNFT = await ValentineNFT.deploy(
-    "Valentine NFT",
-    "VNFT", 
+    "Eternal Cards",
+    "ECARD", 
     traitIds,
     traitNames,
     SVG_ASSEMBLER_ADDRESS,

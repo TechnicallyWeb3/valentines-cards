@@ -4,11 +4,11 @@ import { traits } from '../artwork/valentines.svg';
 import { contracts } from '../typechain-types';
 
 // Configuration
-const MIN_GAS_PRICE_GWEI = 26;
+const MIN_GAS_PRICE_GWEI = 100;
 const GAS_CHECK_INTERVAL = 10000; // 10 seconds
 const GENERAL_CHECK_INTERVAL = 500; // 0.5 seconds
 const DPR_ADDRESS = '0x9885FF0546C921EFb19b1C8a2E10777A9dAc8e88';
-const VALENTINE_NFT_ADDRESS = '0x2F2DAa6af903B01F6F87011242386F686bc61ce1';
+const VALENTINE_NFT_ADDRESS = '0xc82cE02df7D108D3A7D260B45aA69E9ec4013CEB';
 
 // State management
 enum UploadPhase {

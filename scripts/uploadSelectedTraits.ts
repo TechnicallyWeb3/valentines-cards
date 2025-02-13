@@ -13,7 +13,7 @@ async function uploadSelectedTraits(traitIndices: number[]) {
     const valentine = await hre.ethers.getContractAt('ValentineNFT', VALENTINE_NFT_ADDRESS, signer);
 
     // Process each category
-    for (let categoryId = 1; categoryId < traitIndices.length; categoryId++) {
+    for (let categoryId = 0; categoryId < traitIndices.length; categoryId++) {
         const selectedIndex = traitIndices[categoryId];
         const category = Object.values(traits)[categoryId];
         if (!category || selectedIndex >= category.traits.length) {
@@ -65,10 +65,9 @@ async function uploadSelectedTraits(traitIndices: number[]) {
 
 // Example usage:
 const selectedTraits = [
-    13,  // First background trait
-    23,  // Second body trait
-    14,  // First eyes trait
-    // Add other indices as needed
+    1,  // Cyan
+    22,  // Punk
+    4,  // I'd bridge to any chain for you
 ];
 
 uploadSelectedTraits(selectedTraits)
