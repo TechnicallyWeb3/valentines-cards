@@ -2,8 +2,12 @@ import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethe
 
 // Constants
 export const VALENTINE_ADDRESS = '0xf5F4A8e3C1e11623D83a23E50039407F11dCD656';
-// export const NETWORK_ID = '137'; 
-// export const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
+// const NETWORK_NAME = 'Polygon';
+// const NETWORK_SYMBOL = 'POL';
+// const NETWORK_ID = '137';
+// const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
+// const NETWORK_EXPLORER_URL = 'https://polygonscan.com';
+
 const NETWORK_NAME = 'Sepolia';
 const NETWORK_SYMBOL = 'S.ETH';
 const NETWORK_ID = '11155111';

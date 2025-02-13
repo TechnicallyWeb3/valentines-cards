@@ -33,16 +33,46 @@ const profiles = [
         address: "0xB6Aa5a1AA37a4195725cDF1576dc741d359b56bd"
     },
     {
-        name: "@properchaos",
-        image: "https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/bcac1f30218a27ff90eadd3c78851db7~c5_1080x1080.jpeg?lk3s=a5d48078&nonce=58942&refresh_token=c60685511cf175bfbacfdce7cd27eb02&x-expires=1739300400&x-signature=FWEf1CWjJAiLHYbbYd%2FDYGy%2FO%2Bo%3D&shp=a5d48078&shcp=81f88b70",
-        address: "0xEaa9c1Fbd89b0245994dd0162F51Ae675069F117"
-    },
-    {
         name: "Steve Aoki",
         image: "https://i.seadn.io/gae/FDYglkKVkwubS6YrgjWa8Nqa6E47sccB41Va7u0OlvmQwUiOrKiCund13JVSXzLZx76ms--QcVgonfqCbMEBuUMTDmSy9mWsRt-d?auto=format&dpr=1&w=256",
         address: "0xe4bBCbFf51e61D0D95FcC5016609aC8354B177C4"
     },
-    // Add more profiles as needed
+    {
+        name: "TehnicalyWeb3",
+        image: "./images/technicallyweb3.jpeg",
+        address: "0xd95ad26E9e39107B432329bD6bEfB720f1fBb3dD"
+    },
+    {
+        name: "Devilking6105",
+        image: "./images/devilking6105.jpeg",
+        address: "0x395378BDCD1ab5ad866Ff5e11A8Fa085573E334e"
+    },
+    {
+        name: "properchaos",
+        image: "./images/properchaos.jpeg",
+        address: "0xEaa9c1Fbd89b0245994dd0162F51Ae675069F117"
+    },
+    {
+        name: "TechCEO",
+        image: "./images/techceo.jpeg",
+        address: "0xaD5D042e442156FCa27dc794dD104aA1DaCFB9DF"
+    },
+    {
+        name: "bitcoin_free_the_world",
+        image: "./images/bitcoin_free_the_world.jpeg",
+        address: "0xdC07605FB605FD5e11059827C11E374B3888b75E"
+    },
+    {
+        name: "John Whalen",
+        image: "./images/john_whalen.jpeg",
+        address: "0x1E48bCb2dB0b0A03AaCF7A0238d5F7Ba671880AF"
+    },
+    {
+        name: "Travis",
+        image: "./images/travis.jpeg",
+        address: "0x92D8919046fe3da1E5676b0C9f8d8d33da7c724e"
+    },
+
 ];
 
 // Add this to your globals
