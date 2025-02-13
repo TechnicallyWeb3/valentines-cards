@@ -1040,7 +1040,7 @@ html {
     position: relative;
     padding: 0;
     margin-top: 1.5rem;
-    background-color: white; /* Add white background */
+    background-color: rgba(255, 255, 255, 0.8); /* Add white background */
     border-radius: 15px; /* Round corners */
     overflow: hidden; /* Ensure content doesn't overflow the rounded corners */
 }
