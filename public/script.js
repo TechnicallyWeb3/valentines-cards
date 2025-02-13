@@ -739,7 +739,6 @@ function createValentineSentCard(valentine) {
 
 // Add the addMessage function
 async function addMessage(tokenId) {
-    const messageContainer = document.getElementById(`messageInput${tokenId}`).parentElement;
     const inputElement = document.getElementById(`messageInput${tokenId}`);
     const buttonElement = inputElement.nextElementSibling;
     
@@ -764,7 +763,7 @@ async function addMessage(tokenId) {
         await addMessageToToken(tokenId, message);
         
         // On success, replace the input container with the static message
-        messageContainer.innerHTML = `<br><p class="message">"${message}"</p>`;
+        buttonElement.textContent = 'Saved';
         
     } catch (error) {
         console.error('Error adding message:', error);
