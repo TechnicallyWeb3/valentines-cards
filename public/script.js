@@ -84,6 +84,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         await updatePrices();
         updateInstructions();
 
+        // Hide loading screen with fade effect
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.classList.add('fade-out');
+        
+        // Remove loading screen from DOM after fade animation
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 500);
+
     } catch (error) {
         console.error('Error during initialization:', error);
     }
