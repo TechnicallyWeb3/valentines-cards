@@ -1,19 +1,19 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
 
 // Constants
-// export const VALENTINE_ADDRESS = '0xc82cE02df7D108D3A7D260B45aA69E9ec4013CEB';
-// const NETWORK_NAME = 'Polygon';
-// const NETWORK_SYMBOL = 'POL';
-// const NETWORK_ID = '137';
-// const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
-// const NETWORK_EXPLORER_URL = 'https://polygonscan.com';
+export const VALENTINE_ADDRESS = '0xc82cE02df7D108D3A7D260B45aA69E9ec4013CEB';
+const NETWORK_NAME = 'Polygon';
+const NETWORK_SYMBOL = 'POL';
+const NETWORK_ID = '137';
+const RPC_URL = 'https://polygon-bor-rpc.publicnode.com';
+const NETWORK_EXPLORER_URL = 'https://polygonscan.com';
 
-export const VALENTINE_ADDRESS = '0xf5F4A8e3C1e11623D83a23E50039407F11dCD656';
-const NETWORK_NAME = 'Sepolia';
-const NETWORK_SYMBOL = 'S.ETH';
-const NETWORK_ID = '11155111';
-const RPC_URL = 'https://ethereum-sepolia.publicnode.com';
-const NETWORK_EXPLORER_URL = 'https://sepolia.etherscan.io';
+// export const VALENTINE_ADDRESS = '0xf5F4A8e3C1e11623D83a23E50039407F11dCD656';
+// const NETWORK_NAME = 'Sepolia';
+// const NETWORK_SYMBOL = 'S.ETH';
+// const NETWORK_ID = '11155111';
+// const RPC_URL = 'https://ethereum-sepolia.publicnode.com';
+// const NETWORK_EXPLORER_URL = 'https://sepolia.etherscan.io';
 
 export const NETWORK_DETAILS = {
     chainId: NETWORK_ID,
@@ -224,6 +224,7 @@ export async function batchMintValentines(valentines) {
         }
 
         const prices = await getMintPrices();
+        console.log("Current prices:", prices);
 
         // Calculate total price for batch
         const totalPrice = ethers.parseEther(
@@ -231,6 +232,7 @@ export async function batchMintValentines(valentines) {
                 sum + Number(prices.card) + (v.message ? Number(prices.message) : 0)
             , 0).toString()
         );
+        console.log("Total price calculated:", totalPrice.toString());
 
         // Format valentines for contract
         const formattedValentines = valentines.map(v => ({
@@ -238,12 +240,26 @@ export async function batchMintValentines(valentines) {
             from: ethers.ZeroAddress,
             message: v.message || ""
         }));
+        console.log("Formatted valentines:", formattedValentines);
+
+        // Try to estimate gas first
+        try {
+            const gasEstimate = await contract.bulkMint.estimateGas(
+                formattedValentines, 
+                { value: totalPrice }
+            );
+            console.log("Gas estimate:", gasEstimate.toString());
+        } catch (error) {
+            console.error("Gas estimation failed:", error);
+            throw error;
+        }
 
         const tx = await contract.bulkMint(formattedValentines, { value: totalPrice });
         console.log("Transaction sent:", tx.hash);
         
         // Wait for transaction receipt
         const receipt = await tx.wait();
+        console.log("Receipt:", receipt);
         
         // Find ValentineMinted events in the logs
         const mintedTokens = receipt.logs
@@ -269,7 +285,7 @@ export async function batchMintValentines(valentines) {
         };
 
     } catch (error) {
-        console.error('Error batch minting valentines:', error);
+        console.error("Error batch minting valentines:", error);
         throw error;
     }
 }
